@@ -34,7 +34,7 @@
 [ext_resource type="Texture2D" uid="uid://bvosok2fh0g2m" path="res://assets/textures/pins/pin_step_walk.png" id="32_fp3m1"]
 [ext_resource type="Script" uid="uid://7ft3gsmqmrmi" path="res://scripts/gdscript/dynamic_cursor/dynamic_cursor_ui.gd" id="32_ftrmt"]
 [ext_resource type="Texture2D" uid="uid://d34gm7xpy2app" path="res://assets/textures/pins/pin_step_sprint.png" id="33_wmpjg"]
-[ext_resource type="Shader" uid="uid://djxhl7o2j304h" path="res://scripts/shader/WeightedFilmGrainEffect.gdshader" id="35_r6nix"]
+[ext_resource type="Shader" uid="uid://djxhl7o2j304h" path="res://scripts/shader/GrainEffect.gdshader" id="35_r6nix"]
 [ext_resource type="Script" uid="uid://ct4tb6wvfbsco" path="res://scripts/gdscript/fade_by_distance/fade_by_distance.gd" id="36_1gbpw"]
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_sneet"]
