@@ -59,9 +59,22 @@ var follow_player_rotation: bool = false
 @export_group("Camera Effects")
 @export_subgroup("X-Ray Wall System")
 
-var blocked_walls: Array = []  # Текущие заблокированные стены
+@export var xray_enabled: bool = true
+@export var xray_player_color: Color = Color(0.0, 1.0, 0.0, 0.8)
+@export var xray_glow_intensity: float = 3.0
+@export var xray_fade_speed: float = 8.0  # 🔥 НОВОЕ: скорость fade-in/out
+
+# SubViewport для рендера игрока БЕЗ стен
+var xray_viewport: SubViewport
+var xray_camera: Camera3D
+var xray_shader_material: ShaderMaterial
+var xray_overlay: ColorRect
+
+var current_xray_walls: Array = []
+var xray_target_alpha: float = 0.0  # 🔥 НОВОЕ: целевая прозрачность
+var xray_current_alpha: float = 0.0  # 🔥 НОВОЕ: текущая прозрачность
 var raycast_cooldown: float = 0.0
-const RAYCAST_INTERVAL: float = 0.1  # Проверка каждые 100ms (оптимизация!)
+const RAYCAST_INTERVAL: float = 0.05  # 🔥 УЛУЧШЕНО: 50ms вместо 100ms
 
 @export_subgroup("Shake")
 @export var shake_enabled_in_game_only: bool = true  # Shake только в GAME состоянии
@@ -233,20 +246,50 @@ func _ready():
 	
 		
 	make_current()
-
+	_create_xray_shader()
 
 
 
 func _process(delta):
 	if not target:
 		return
+	
+	# 🔥 ОПТИМИЗАЦИЯ: Синхронизация X-Ray камеры только если система активна
+	if xray_camera and xray_enabled and (xray_current_alpha > 0.01 or xray_target_alpha > 0.0):
+		xray_camera.global_transform = global_transform
+		xray_camera.fov = fov
+		xray_camera.near = near
+		xray_camera.far = far
+		
+		# Обновляем текстуру в шейдере
+		if xray_shader_material and xray_viewport:
+			xray_shader_material.set_shader_parameter("xray_scene", xray_viewport.get_texture())
+	
+	# 🔥 ПЛАВНЫЙ FADE X-RAY OVERLAY
+	if xray_overlay:
+		xray_current_alpha = lerp(xray_current_alpha, xray_target_alpha, delta * xray_fade_speed)
+		
+		# Оптимизация: полностью отключаем overlay когда невидим
+		if xray_current_alpha < 0.01:
+			xray_overlay.visible = false
+			xray_overlay.modulate.a = 0.0
+			# 🔥 ОТКЛЮЧАЕМ VIEWPORT для экономии ресурсов
+			if xray_viewport:
+				xray_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
+		else:
+			xray_overlay.visible = true
+			xray_overlay.modulate.a = xray_current_alpha
+			# 🔥 ВКЛЮЧАЕМ VIEWPORT только когда нужен
+			if xray_viewport:
+				xray_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 
 	# ПРИОРИТЕТ: Анимация перехода между состояниями
 	if state_animating:
 		_update_state_animation(delta)
 		_apply_shake(delta)
 		return
-		
+	
+	# 🔥 RAYCAST только в GAME состоянии
 	if current_state == CameraState.GAME:
 		raycast_cooldown -= delta
 		
@@ -925,68 +968,150 @@ func add_impulse_shake(strength: float = 1.0):
 	print("💥 Impulse shake added | strength: %.2f, trauma: %.2f" % [strength, shake_trauma])
 
 # ============================================
-# TRANSPARENT WALL SYSTEM (DUAL CAMERA)
+# TRANSPARENT WALL SYSTEM
 # ============================================
+func _find_mesh_in_wall(wall_node: Node) -> MeshInstance3D:
+	"""Находит MeshInstance3D в стене (рекурсивно)"""
+	if wall_node is MeshInstance3D:
+		return wall_node
+	
+	# Проверяем родителя
+	if wall_node.get_parent() is MeshInstance3D:
+		return wall_node.get_parent()
+	
+	# Проверяем детей (рекурсивно)
+	for child in wall_node.get_children():
+		if child is MeshInstance3D:
+			return child
+		var nested = _find_mesh_in_wall(child)
+		if nested:
+			return nested
+	
+	return null
+	
+func _create_xray_shader():
+	"""Создает X-Ray систему (отложенная инициализация)"""
+	call_deferred("_init_xray_system")
+
+func _init_xray_system():
+	"""Инициализация X-Ray после готовности дерева"""
+	
+	# 1️⃣ СОЗДАЕМ SUBVIEWPORT
+	xray_viewport = SubViewport.new()
+	xray_viewport.size = get_viewport().size
+	xray_viewport.transparent_bg = true
+	xray_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED  # 🔥 По умолчанию выключен
+	add_child(xray_viewport)
+	
+	# 2️⃣ СОЗДАЕМ ДУБЛИРУЮЩУЮ КАМЕРУ
+	xray_camera = Camera3D.new()
+	xray_camera.cull_mask = 0b00000010  # Только слой 2 (игрок)
+	xray_viewport.add_child(xray_camera)
+	
+	# 3️⃣ НАСТРАИВАЕМ ИГРОКА НА СЛОЙ 2
+	if target:
+		_setup_player_xray_layer(target)
+	
+	# 4️⃣ СОЗДАЕМ ШЕЙДЕР ДЛЯ КОМПОЗИТИНГА
+	var shader_code = """
+shader_type canvas_item;
+
+uniform sampler2D main_scene : hint_screen_texture;
+uniform sampler2D xray_scene : source_color;
+uniform vec4 xray_color : source_color = vec4(0.0, 1.0, 0.0, 0.8);
+uniform float glow_intensity : hint_range(0.0, 10.0) = 3.0;
+
+void fragment() {
+	vec4 main = texture(main_scene, SCREEN_UV);
+	vec4 xray = texture(xray_scene, SCREEN_UV);
+	
+	// Если на xray есть игрок - подсвечиваем
+	if (xray.a > 0.01) {
+		vec3 glow = xray_color.rgb * glow_intensity;
+		COLOR = vec4(mix(main.rgb, glow, xray.a * xray_color.a), 1.0);
+	} else {
+		COLOR = main;
+	}
+}
+"""
+	
+	var shader = Shader.new()
+	shader.code = shader_code
+	
+	xray_shader_material = ShaderMaterial.new()
+	xray_shader_material.shader = shader
+	xray_shader_material.set_shader_parameter("xray_color", xray_player_color)
+	xray_shader_material.set_shader_parameter("glow_intensity", xray_glow_intensity)
+	
+	# 5️⃣ СОЗДАЕМ OVERLAY COLORRECT
+	xray_overlay = ColorRect.new()
+	xray_overlay.material = xray_shader_material
+	xray_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	xray_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	xray_overlay.visible = false  # Изначально скрыт
+	xray_overlay.modulate.a = 0.0  # 🔥 Полностью прозрачен
+	
+	# 6️⃣ ДОБАВЛЯЕМ В CANVASLAYER
+	var canvas_layer = CanvasLayer.new()
+	canvas_layer.layer = 100  # Поверх всего
+	canvas_layer.name = "XRayOverlayLayer"
+	canvas_layer.add_child(xray_overlay)
+	
+	get_tree().root.call_deferred("add_child", canvas_layer)
+	
+	print("✅ X-Ray система создана (оптимизированная)")
+
+func _setup_player_xray_layer(player_node: Node):
+	"""Дублирует игрока на слой 2 для X-Ray"""
+	if player_node is VisualInstance3D:
+		# Добавляем слой 2, не удаляя слой 1
+		player_node.layers = 0b00000011  # Слои 1 и 2
+	
+	# Рекурсивно для детей
+	for child in player_node.get_children():
+		_setup_player_xray_layer(child)
 	
 func _check_blocked_walls():
-	"""Проверяет какие стены блокируют обзор (оптимизированный raycast)"""
-	if not target:
+	if not target or not xray_enabled:
+		# 🔥 Отключаем overlay если система выключена
+		xray_target_alpha = 0.0
 		return
 	
 	var space_state = get_world_3d().direct_space_state
 	var from = global_position
 	var to = target.global_position
 	
+	# 🔥 ОПТИМИЗАЦИЯ: Один raycast с hit_back_faces
 	var query = PhysicsRayQueryParameters3D.create(from, to)
-	query.collision_mask = 0xFFFFFFFF  # Все слои
+	query.collision_mask = 0xFFFFFFFF
 	query.exclude = [target]
 	query.collide_with_areas = false
 	query.collide_with_bodies = true
+	query.hit_back_faces = false  # Игнорируем обратные стороны
 	
-	var new_blocked_walls: Array = []
+	var result = space_state.intersect_ray(query)
 	
-	# Множественные raycast'ы до попадания в игрока
-	var max_iterations = 10
-	var current_pos = from
-	
-	for i in range(max_iterations):
-		var ray_query = PhysicsRayQueryParameters3D.create(current_pos, to)
-		ray_query.collision_mask = query.collision_mask
-		ray_query.exclude = query.exclude
-		
-		var result = space_state.intersect_ray(ray_query)
-		
-		if result.is_empty():
-			break
-		
+	# 🔥 ПРОСТАЯ ЛОГИКА: Есть коллизия со стеной = включаем X-Ray
+	if not result.is_empty():
 		var collider = result.collider
 		
-		# 🔥 ПРОВЕРКА ГРУППЫ НАПРЯМУЮ
 		if collider.is_in_group("wall"):
-			if collider is StaticBody3D:
-				print("🚧 Найдена стена (StaticBody3D) в группе 'wall'")
-		
-		# Двигаем луч дальше
-		current_pos = result.position + (to - current_pos).normalized() * 0.01
-		
-		# Если дошли до игрока - стоп
-		if current_pos.distance_to(to) < 0.1:
-			break
-
-func _find_mesh_in_wall(wall_node: Node) -> MeshInstance3D:
-	"""Находит MeshInstance3D в стене"""
-	if wall_node is MeshInstance3D:
-		return wall_node
-	
-	if wall_node.get_parent() is MeshInstance3D:
-		return wall_node.get_parent()
-	
-	for child in wall_node.get_children():
-		if child is MeshInstance3D:
-			return child
-	
-	return null
+			# Стена найдена - включаем overlay
+			xray_target_alpha = 1.0
 			
+			if current_xray_walls.is_empty():
+				print("👁️ X-Ray активирован - игрок за стеной")
+			
+			current_xray_walls = [collider]
+			return
+	
+	# 🔥 Стен нет - выключаем overlay
+	if not current_xray_walls.is_empty():
+		print("✅ X-Ray деактивирован - путь свободен")
+	
+	xray_target_alpha = 0.0
+	current_xray_walls.clear()
+
 func get_current_mode() -> String:
 	if is_top_down_view:
 		return "Top-Down"

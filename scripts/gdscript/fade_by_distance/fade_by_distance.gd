@@ -45,7 +45,6 @@ func _ready() -> void:
 		_input_manager_node = get_node(input_manager)
 		if _input_manager_node and _input_manager_node.has_signal("fog_effect_toggled"):
 			_input_manager_node.fog_effect_toggled.connect(_on_fog_effect_toggled)
-			print("✅ FogEffect: подключен к InputManager")
 		else:
 			push_warning("⚠️ InputManager не найден или не имеет сигнала fog_effect_toggled")
 	else:
@@ -90,7 +89,6 @@ func _process(_delta: float) -> void:
 ## ============================================
 
 func _on_fog_effect_toggled(is_paused: bool) -> void:
-	print("🌫️ FogEffect: получен сигнал fog_effect_toggled(%s)" % is_paused)
 
 	if is_paused:
 		_animate_to_paused()
@@ -158,7 +156,6 @@ func _animate_to_paused() -> void:
 		pause_transition_duration
 	)
 
-	print("🌫️ FogEffect: анимация ПАУЗЫ запущена")
 
 func _animate_to_unpaused() -> void:
 	if _active_tween:
@@ -191,8 +188,6 @@ func _animate_to_unpaused() -> void:
 		time_speed,
 		pause_transition_duration
 	)
-
-	print("🌫️ FogEffect: анимация СНЯТИЯ ПАУЗЫ запущена")
 
 ## ============================================
 ## 🟦 ОБНОВЛЕНИЕ СТАТИЧЕСКИХ ПАРАМЕТРОВ В МАТЕРИАЛ
