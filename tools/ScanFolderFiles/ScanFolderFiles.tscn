@@ -1,0 +1,170 @@
+[gd_scene load_steps=15 format=3 uid="uid://cnhshfsm2gpjs"]
+
+[ext_resource type="Script" uid="uid://h110anmbrux7" path="res://tools/ScanFolderFiles/ProjectStatsUI.gd" id="1_cnwk7"]
+[ext_resource type="Script" uid="uid://o1phf2svme80" path="res://tools/ScanFolderFiles/ProjectScanner.cs" id="1_olhob"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t6i4e"]
+bg_color = Color(0.6, 0.6, 0.0862745, 0.423529)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="LabelSettings" id="LabelSettings_4rivu"]
+font_size = 26
+outline_size = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_o2gge"]
+bg_color = Color(0, 0, 0, 0.490196)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="LabelSettings" id="LabelSettings_1k5rj"]
+font_size = 20
+
+[sub_resource type="LabelSettings" id="LabelSettings_pv8bp"]
+font_size = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7tsvq"]
+bg_color = Color(0.6, 0.6, 0.0862745, 0.423529)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="LabelSettings" id="LabelSettings_2y2bp"]
+font_size = 20
+
+[sub_resource type="LabelSettings" id="LabelSettings_eju87"]
+font_size = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gk7ii"]
+bg_color = Color(0.1012, 0.6, 0.084, 0.423529)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="LabelSettings" id="LabelSettings_3qumi"]
+font_size = 20
+
+[sub_resource type="FontFile" id="FontFile_ibalp"]
+subpixel_positioning = 0
+msdf_pixel_range = 14
+msdf_size = 128
+cache/0/30/0/ascent = 0.0
+cache/0/30/0/descent = 0.0
+cache/0/30/0/underline_position = 0.0
+cache/0/30/0/underline_thickness = 0.0
+cache/0/30/0/scale = 1.0
+cache/0/16/0/ascent = 0.0
+cache/0/16/0/descent = 0.0
+cache/0/16/0/underline_position = 0.0
+cache/0/16/0/underline_thickness = 0.0
+cache/0/16/0/scale = 1.0
+cache/0/40/0/ascent = 0.0
+cache/0/40/0/descent = 0.0
+cache/0/40/0/underline_position = 0.0
+cache/0/40/0/underline_thickness = 0.0
+cache/0/40/0/scale = 1.0
+
+[sub_resource type="LabelSettings" id="LabelSettings_dehvl"]
+font = SubResource("FontFile_ibalp")
+font_size = 40
+font_color = Color(1, 0, 0, 1)
+outline_size = 1
+
+[node name="ProjectStats_AND_ExitTrigger" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_cnwk7")
+exit_scene = null
+
+[node name="ProjectScanner" type="Node" parent="." groups=["project_scanner"]]
+script = ExtResource("1_olhob")
+
+[node name="LabelExitScene" type="Label" parent="."]
+modulate = Color(1, 1, 1, 0.490196)
+layout_mode = 1
+offset_left = 5.0
+offset_top = 10.0
+offset_right = 460.0
+offset_bottom = 49.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_t6i4e")
+text = "  Press [ ESC ] to exit this scene  "
+label_settings = SubResource("LabelSettings_4rivu")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PS_PanelUI" type="Panel" parent="."]
+modulate = Color(1, 1, 1, 0.490196)
+layout_mode = 1
+anchors_preset = -1
+offset_left = 5.0
+offset_top = 60.0
+offset_right = 405.0
+offset_bottom = 235.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_o2gge")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PS_PanelUI"]
+layout_mode = 1
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 117.0
+offset_bottom = 81.0
+
+[node name="FoldersLabel" type="Label" parent="PS_PanelUI/VBoxContainer"]
+layout_mode = 2
+text = "📁 Folders: ..."
+label_settings = SubResource("LabelSettings_1k5rj")
+vertical_alignment = 1
+
+[node name="FilesLabel" type="Label" parent="PS_PanelUI/VBoxContainer"]
+layout_mode = 2
+text = "📄 Files: ..."
+label_settings = SubResource("LabelSettings_pv8bp")
+vertical_alignment = 1
+
+[node name="LinesLabel" type="Label" parent="PS_PanelUI/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_7tsvq")
+text = "Scripts & Lines "
+label_settings = SubResource("LabelSettings_2y2bp")
+
+[node name="ScenesLabel" type="Label" parent="PS_PanelUI/VBoxContainer"]
+layout_mode = 2
+text = "Scenes"
+label_settings = SubResource("LabelSettings_eju87")
+vertical_alignment = 1
+
+[node name="SizeLabel" type="Label" parent="PS_PanelUI/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_gk7ii")
+text = "Size Project"
+label_settings = SubResource("LabelSettings_3qumi")
+vertical_alignment = 1
+
+[node name="LabelCountdown" type="Label" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -10.5
+offset_right = 20.0
+offset_bottom = 10.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "Exit"
+label_settings = SubResource("LabelSettings_dehvl")
+horizontal_alignment = 1
+vertical_alignment = 1

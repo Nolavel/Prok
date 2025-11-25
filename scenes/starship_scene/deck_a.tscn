@@ -1,0 +1,134 @@
+[gd_scene load_steps=12 format=3 uid="uid://ds70p1sop5qvd"]
+
+[ext_resource type="PackedScene" uid="uid://o0x04nape8wr" path="res://scenes/Shuttle/shuttle.tscn" id="2_kqjuy"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_i5txn"]
+albedo_color = Color(0.4509804, 0.4509804, 0.4509804, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_nykwy"]
+size = Vector3(60, 1, 80)
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_t70qf"]
+points = PackedVector3Array(-30.634922, -1.1349206, -40.619015, 30.317463, 1.4047618, 40.619015, 30.317463, -1.1349206, 40.619015, 30.317463, 1.4047618, -40.619015, -30.634922, 1.4047618, 40.619015, -30.634922, -1.1349206, 40.619015, 30.317463, -1.1349206, -40.619015, -30.634922, 1.4047618, -40.619015)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_u1q7v"]
+height = 7.5
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_kqjuy"]
+height = 10.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kqjuy"]
+transparency = 1
+albedo_color = Color(0.16, 0.16, 0.16, 0.78431374)
+
+[sub_resource type="BoxMesh" id="BoxMesh_t70qf"]
+material = SubResource("StandardMaterial3D_kqjuy")
+size = Vector3(30, 30, 40)
+
+[sub_resource type="BoxMesh" id="BoxMesh_etpw3"]
+size = Vector3(5, 0.5, 0.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_i5txn"]
+size = Vector3(10, 0.5, 0.5)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_nykwy"]
+height = 40.0
+
+[node name="DECK_A" type="Node3D"]
+
+[node name="Lift_Lobby_A_Section" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 103.03311)
+
+[node name="pf_concourse" type="CSGPolygon3D" parent="Lift_Lobby_A_Section" groups=["ground"]]
+transform = Transform3D(1, 0, 0, 0, -4.3711385e-08, -0.99999994, 0, 0.99999994, -4.3711385e-08, 0, 0, 96.69275)
+use_collision = true
+collision_layer = 3
+collision_mask = 3
+polygon = PackedVector2Array(10, 0, 5, 8.66, -5, 8.66, -10, 0, -5, -8.66, 5, -8.66)
+
+[node name="Shuttle_Bay_Section" type="Node3D" parent="."]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, 34.660583)
+
+[node name="pf_ShuttleBay" type="CSGPolygon3D" parent="Shuttle_Bay_Section"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 22.91401, 5.370786, -71.68824)
+visible = false
+use_collision = true
+polygon = PackedVector2Array(6, 1, 3, 4, -3, 4, -6, 1, -6, -9, 6, -9)
+
+[node name="MeshShuttleBay" type="MeshInstance3D" parent="Shuttle_Bay_Section"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.01870955e-05, 0, -116.526794)
+material_override = SubResource("StandardMaterial3D_i5txn")
+mesh = SubResource("BoxMesh_nykwy")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Shuttle_Bay_Section/MeshShuttleBay" groups=["ground"]]
+collision_layer = 3
+collision_mask = 3
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Shuttle_Bay_Section/MeshShuttleBay/StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("ConvexPolygonShape3D_t70qf")
+
+[node name="ShuttleServicingSystem" type="Node3D" parent="Shuttle_Bay_Section"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.4256086, 20.458282, -118.80554)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Shuttle_Bay_Section/ShuttleServicingSystem"]
+transform = Transform3D(-4.3711385e-08, -0.99999994, 0, 0.99999994, -4.3711385e-08, 0, 0, 0, 1, -1.2210541, 0, 0)
+mesh = SubResource("CylinderMesh_u1q7v")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Shuttle_Bay_Section/ShuttleServicingSystem"]
+transform = Transform3D(0.60142446, 0.79892933, -3.484456e-08, -0.79892933, 0.60142446, -6.984463e-08, -3.4844575e-08, 6.984462e-08, 1, 6.473236, 3.0110474, 0)
+mesh = SubResource("CylinderMesh_kqjuy")
+
+[node name="ShuttleAirlock" type="Node3D" parent="Shuttle_Bay_Section"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0209468e-05, 36.758728, -116.7827)
+visible = false
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Shuttle_Bay_Section/ShuttleAirlock"]
+mesh = SubResource("BoxMesh_t70qf")
+
+[node name="ShuttleLaunchSupport" type="Node3D" parent="Shuttle_Bay_Section"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0456888e-05, 19.522629, -119.612854)
+visible = false
+
+[node name="Fasten1" type="MeshInstance3D" parent="Shuttle_Bay_Section/ShuttleLaunchSupport"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.6636353, -2.4232178, 0)
+mesh = SubResource("BoxMesh_etpw3")
+
+[node name="Fasten1-M" type="MeshInstance3D" parent="Shuttle_Bay_Section/ShuttleLaunchSupport"]
+transform = Transform3D(0.847539, 0.5307331, -1.332856e-08, -0.5307331, 0.847539, -4.6398164e-08, -1.3328567e-08, 4.6398164e-08, 1, -10.077288, 0.022411346, 0)
+mesh = SubResource("BoxMesh_i5txn")
+
+[node name="Fasten3-M" type="MeshInstance3D" parent="Shuttle_Bay_Section/ShuttleLaunchSupport"]
+transform = Transform3D(0.8480481, -0.52991927, 0, 0.52991927, 0.8480481, 0, 0, 0, 1, 10.462507, 0.022411346, 0)
+mesh = SubResource("BoxMesh_i5txn")
+
+[node name="Fasten4-M" type="MeshInstance3D" parent="Shuttle_Bay_Section/ShuttleLaunchSupport"]
+transform = Transform3D(0.8480481, -0.52991927, 0, 0.52991927, 0.8480481, 0, 0, 0, 1, 10.462506, 0.022411346, 6.59729)
+mesh = SubResource("BoxMesh_i5txn")
+
+[node name="Fasten2-M" type="MeshInstance3D" parent="Shuttle_Bay_Section/ShuttleLaunchSupport"]
+transform = Transform3D(0.847539, 0.5307331, -1.332856e-08, -0.5307331, 0.847539, -4.6398164e-08, -1.3328567e-08, 4.6398164e-08, 1, -10.077289, 0.022411346, 6.769104)
+mesh = SubResource("BoxMesh_i5txn")
+
+[node name="Fasten2" type="MeshInstance3D" parent="Shuttle_Bay_Section/ShuttleLaunchSupport"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.911316, -2.4232178, 0)
+mesh = SubResource("BoxMesh_etpw3")
+
+[node name="Fasten3" type="MeshInstance3D" parent="Shuttle_Bay_Section/ShuttleLaunchSupport"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.663636, -2.4232178, 6.750366)
+mesh = SubResource("BoxMesh_etpw3")
+
+[node name="Fasten4" type="MeshInstance3D" parent="Shuttle_Bay_Section/ShuttleLaunchSupport"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.8719776, -2.4232178, 6.750366)
+mesh = SubResource("BoxMesh_etpw3")
+
+[node name="lifting_mechanism" type="MeshInstance3D" parent="Shuttle_Bay_Section/ShuttleLaunchSupport"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 14.431915, 2.505478, 3.0405884)
+mesh = SubResource("CylinderMesh_nykwy")
+
+[node name="lifting_mechanism2" type="MeshInstance3D" parent="Shuttle_Bay_Section/ShuttleLaunchSupport"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -14.272003, 2.505478, 3.0405884)
+mesh = SubResource("CylinderMesh_nykwy")
+
+[node name="Shuttle" parent="." instance=ExtResource("2_kqjuy")]
+transform = Transform3D(-1, 0, -1.509958e-07, 0, 1, 0, 1.509958e-07, 0, -1, 0, -5.983963, 151.07927)

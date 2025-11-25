@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://duxn5rqcau5dw"]
+
+[ext_resource type="Script" path="res://tools/StatsDisplay/StatsDisplay.gd" id="1_w5efj"]
+
+[node name="StatsDisplay" type="Control"]
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -200.0
+offset_bottom = 200.0
+grow_horizontal = 0
+script = ExtResource("1_w5efj")

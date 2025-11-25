@@ -1,0 +1,137 @@
+[gd_scene load_steps=13 format=3 uid="uid://6dopa316y1fc"]
+
+[ext_resource type="Script" uid="uid://b1eul5hgx5mk6" path="res://scripts/gdscript/cameras/camera_follow.gd" id="1_rynbu"]
+[ext_resource type="Shader" uid="uid://cbbql6fcxtel8" path="res://scripts/shader/hud3d_panel.gdshader" id="2_q5wn2"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_rynbu"]
+font_color = Color(0, 0, 0, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_q84rs"]
+font_color = Color(0, 0, 0, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_nsx0a"]
+font_color = Color(0, 0, 0, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_q5wn2"]
+size = Vector2(2.44, 0.21)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_752k3"]
+render_priority = 0
+shader = ExtResource("2_q5wn2")
+shader_parameter/fade = 1.0
+shader_parameter/tint_color = Color(1, 1, 1, 1)
+shader_parameter/edge_softness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_q5wn2"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_buvpy"]
+material = SubResource("StandardMaterial3D_q5wn2")
+size = Vector2(0.15, 0.15)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_7ig42"]
+material = SubResource("StandardMaterial3D_q5wn2")
+size = Vector2(0.15, 0.15)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_752k3"]
+material = SubResource("StandardMaterial3D_q5wn2")
+size = Vector2(0.15, 0.15)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_puplt"]
+material = SubResource("StandardMaterial3D_q5wn2")
+size = Vector2(0.3, 0.15)
+
+[node name="CameraFollow" type="Camera3D"]
+current = true
+size = 20.0
+script = ExtResource("1_rynbu")
+top_down_angle = -85.0
+
+[node name="CameraSettings" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -431.0
+offset_top = -234.0
+offset_right = -38.0
+offset_bottom = -34.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CameraSettings"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="CurrentMode" type="Label" parent="CameraSettings/VBoxContainer"]
+layout_mode = 2
+text = "Current Mode"
+label_settings = SubResource("LabelSettings_rynbu")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Orbital" type="Label" parent="CameraSettings/VBoxContainer"]
+layout_mode = 2
+text = "Orbital"
+label_settings = SubResource("LabelSettings_q84rs")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Follow" type="Label" parent="CameraSettings/VBoxContainer"]
+layout_mode = 2
+text = "Follow"
+label_settings = SubResource("LabelSettings_nsx0a")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Node3D" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.2013016, -1.3356018)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.7880107, -0.61566144, 0, 0.61566144, 0.7880107, 0, -0.925, -1.5)
+mesh = SubResource("PlaneMesh_q5wn2")
+skeleton = NodePath("../Node3D")
+surface_material_override/0 = SubResource("ShaderMaterial_752k3")
+
+[node name="MeshInstance3D4" type="MeshInstance3D" parent="MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, -2.9802322e-08, 0, 2.9802322e-08, 1, -0.9, 0.1, 0)
+mesh = SubResource("PlaneMesh_buvpy")
+
+[node name="Label3D" type="Label3D" parent="MeshInstance3D/MeshInstance3D4"]
+transform = Transform3D(1, 0, 0, 0, -0.06334782, 0.9979916, 0, -0.9979916, -0.06334782, 0, 0.020873785, -0.016308546)
+pixel_size = 0.001
+text = "радиокт"
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, -2.9802322e-08, 0, 2.9802322e-08, 1, -0.7, 0.100000024, -1.1920929e-07)
+mesh = SubResource("PlaneMesh_7ig42")
+
+[node name="Label3D" type="Label3D" parent="MeshInstance3D/MeshInstance3D3"]
+transform = Transform3D(1, 0, 0, 0, -0.06334782, 0.9979916, 0, -0.9979916, -0.06334782, 0, 0.020873785, -0.016308546)
+pixel_size = 0.001
+text = "т среды
+т  тела"
+
+[node name="TestMeshLife" type="MeshInstance3D" parent="MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, -2.9802322e-08, 0, 2.9802322e-08, 1, -0.5, 0.1, 0)
+mesh = SubResource("PlaneMesh_752k3")
+
+[node name="Label3D" type="Label3D" parent="MeshInstance3D/TestMeshLife"]
+transform = Transform3D(1, 0, 0, 0, -0.06334782, 0.9979916, 0, -0.9979916, -0.06334782, 0, 0.020873785, -0.016308546)
+pixel_size = 0.001
+text = "годод
+жажда
+гигиена
+"
+
+[node name="MeshActiveSlot" type="MeshInstance3D" parent="MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, -2.9802322e-08, 0, 2.9802322e-08, 1, 0.7, 0.1, 0)
+mesh = SubResource("PlaneMesh_puplt")
+
+[node name="Label3D" type="Label3D" parent="MeshInstance3D/MeshActiveSlot"]
+transform = Transform3D(1, 0, 0, 0, -0.06334782, 0.9979916, 0, -0.9979916, -0.06334782, 0, 0.020873785, -0.016308546)
+pixel_size = 0.001
+text = "актив
+слот"
