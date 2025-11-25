@@ -58,23 +58,36 @@ var follow_player_rotation: bool = false
 
 @export_group("Camera Effects")
 @export_subgroup("X-Ray Wall System")
-
 @export var xray_enabled: bool = true
-@export var xray_player_color: Color = Color(0.0, 1.0, 0.0, 0.8)
-@export var xray_glow_intensity: float = 3.0
-@export var xray_fade_speed: float = 8.0  # 🔥 НОВОЕ: скорость fade-in/out
+@export var xray_player_color: Color = Color(0.0, 1.0, 0.0, 0.9)  # 🔥 Увеличена alpha
+@export var xray_glow_intensity: float = 6.0  # 🔥 Ярче базовое значение
 
-# SubViewport для рендера игрока БЕЗ стен
+# 🔥 AAA-POLISH ПАРАМЕТРЫ
+@export var xray_fade_in_speed: float = 25.0   # Мгновенное появление
+@export var xray_fade_out_speed: float = 15.0  # Быстрое исчезновение
+@export var xray_pulse_enabled: bool = true
+@export var xray_pulse_speed: float = 4.5      # Быстрее пульсация (заметнее)
+@export var xray_pulse_amplitude: float = 0.35 # 🔥 УВЕЛИЧЕНО: ±35% вместо ±15%
+@export var xray_color_boost_enabled: bool = true
+@export var xray_color_boost_max: float = 1.5  # 🔥 +50% яркости на пике
+@export var xray_scan_speed: float = 2.0
+@export var xray_hologram_effect: float = 1  # 0 = выкл, 1 = макс
+@export var xray_edge_style: int = 0  # 0=Cyan, 1=Red, 2=Rainbow
+@export var xray_hologram_flicker: float = 1  # 0-1
+@export var xray_edge_glow: float = 1
+@export var xray_chromatic: float = 0
+
+# Переменные состояния
 var xray_viewport: SubViewport
 var xray_camera: Camera3D
 var xray_shader_material: ShaderMaterial
 var xray_overlay: ColorRect
-
 var current_xray_walls: Array = []
-var xray_target_alpha: float = 0.0  # 🔥 НОВОЕ: целевая прозрачность
-var xray_current_alpha: float = 0.0  # 🔥 НОВОЕ: текущая прозрачность
+var xray_target_alpha: float = 0.0
+var xray_current_alpha: float = 0.0
+var xray_pulse_time: float = 0.0
 var raycast_cooldown: float = 0.0
-const RAYCAST_INTERVAL: float = 0.05  # 🔥 УЛУЧШЕНО: 50ms вместо 100ms
+const RAYCAST_INTERVAL: float = 0.008  # 125 Hz
 
 @export_subgroup("Shake")
 @export var shake_enabled_in_game_only: bool = true  # Shake только в GAME состоянии
@@ -248,40 +261,13 @@ func _ready():
 	make_current()
 	_create_xray_shader()
 
-
-
 func _process(delta):
 	if not target:
 		return
 	
-	# 🔥 ОПТИМИЗАЦИЯ: Синхронизация X-Ray камеры только если система активна
-	if xray_camera and xray_enabled and (xray_current_alpha > 0.01 or xray_target_alpha > 0.0):
-		xray_camera.global_transform = global_transform
-		xray_camera.fov = fov
-		xray_camera.near = near
-		xray_camera.far = far
-		
-		# Обновляем текстуру в шейдере
-		if xray_shader_material and xray_viewport:
-			xray_shader_material.set_shader_parameter("xray_scene", xray_viewport.get_texture())
-	
-	# 🔥 ПЛАВНЫЙ FADE X-RAY OVERLAY
-	if xray_overlay:
-		xray_current_alpha = lerp(xray_current_alpha, xray_target_alpha, delta * xray_fade_speed)
-		
-		# Оптимизация: полностью отключаем overlay когда невидим
-		if xray_current_alpha < 0.01:
-			xray_overlay.visible = false
-			xray_overlay.modulate.a = 0.0
-			# 🔥 ОТКЛЮЧАЕМ VIEWPORT для экономии ресурсов
-			if xray_viewport:
-				xray_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
-		else:
-			xray_overlay.visible = true
-			xray_overlay.modulate.a = xray_current_alpha
-			# 🔥 ВКЛЮЧАЕМ VIEWPORT только когда нужен
-			if xray_viewport:
-				xray_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	_update_xray_system(delta)
+	var shader_time = Time.get_ticks_msec() / 1000.0
+	xray_shader_material.set_shader_parameter("time", shader_time)
 
 	# ПРИОРИТЕТ: Анимация перехода между состояниями
 	if state_animating:
@@ -988,7 +974,167 @@ func _find_mesh_in_wall(wall_node: Node) -> MeshInstance3D:
 			return nested
 	
 	return null
+
+
+func _update_xray_system(delta: float):
+	"""Полное управление X-Ray эффектом"""
 	
+	if not xray_enabled or not xray_camera:
+		return
+	
+	# 1️⃣ Синхронизация камеры (ВСЕГДА)
+	xray_camera.global_transform = global_transform
+	xray_camera.fov = fov
+	xray_camera.near = near
+	xray_camera.far = far
+	
+	# 2️⃣ Обновление текстуры шейдера
+	if xray_shader_material and xray_viewport:
+		xray_shader_material.set_shader_parameter("xray_scene", xray_viewport.get_texture())
+	
+	# 3️⃣ ASYMMETRIC FADE с easing
+	_update_xray_fade(delta)
+	
+	# 4️⃣ ВИЗУАЛЬНЫЕ ЭФФЕКТЫ (пульсация + яркость)
+	_update_xray_visual_effects(delta)
+	
+	# 5️⃣ УПРАВЛЕНИЕ VIEWPORT и OVERLAY
+	_update_xray_visibility()
+
+# ============================================
+# ASYMMETRIC FADE С EASING
+# ============================================
+func _update_xray_fade(delta: float):
+	"""Плавное появление/исчезновение с разной скоростью"""
+	
+	var fade_speed = xray_fade_in_speed if xray_target_alpha > xray_current_alpha else xray_fade_out_speed
+	var raw_alpha = lerp(xray_current_alpha, xray_target_alpha, delta * fade_speed)
+	
+	# 🎨 Easing для fade-in (быстрый punch)
+	if xray_target_alpha > xray_current_alpha:
+		var t = clamp(raw_alpha / max(xray_target_alpha, 0.01), 0.0, 1.0)
+		xray_current_alpha = _ease_out_cubic(t) * xray_target_alpha
+	else:
+		# Fade-out без easing (плавное затухание)
+		xray_current_alpha = raw_alpha
+
+# ============================================
+# ВИЗУАЛЬНЫЕ ЭФФЕКТЫ (ПУЛЬСАЦИЯ + BOOST)
+# ============================================
+func _update_xray_visual_effects(delta: float):
+	"""Пульсация + динамическая яркость"""
+	
+	if not xray_shader_material:
+		return
+	
+	# 🔥 ПУЛЬСАЦИЯ (только когда видно)
+	if xray_pulse_enabled and xray_current_alpha > 0.1:
+		xray_pulse_time += delta * xray_pulse_speed
+		
+		# 🎨 Используем abs(sin) для "дыхания" (0→1→0)
+		var pulse_wave = abs(sin(xray_pulse_time))
+		var pulse_intensity = xray_glow_intensity * (1.0 + pulse_wave * xray_pulse_amplitude)
+		
+		xray_shader_material.set_shader_parameter("glow_intensity", pulse_intensity)
+	else:
+		# Статичное значение когда неактивен
+		xray_shader_material.set_shader_parameter("glow_intensity", xray_glow_intensity)
+	
+	# 🎨 ДИНАМИЧЕСКОЕ УСИЛЕНИЕ ЦВЕТА (ярче на пике)
+	if xray_color_boost_enabled:
+		var color_multiplier = lerp(1.0, xray_color_boost_max, xray_current_alpha)
+		var boosted_color = xray_player_color * color_multiplier
+		xray_shader_material.set_shader_parameter("xray_color", boosted_color)
+
+func _update_xray_visibility():
+	"""Умное включение/выключение рендера"""
+	
+	if not xray_overlay or not xray_viewport:
+		return
+	
+	# ✅ ВКЛЮЧАЕМ моментально при xray_target_alpha > 0
+	if xray_target_alpha > 0.0:
+		if xray_viewport.render_target_update_mode == SubViewport.UPDATE_DISABLED:
+			xray_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+			print("🔋 X-Ray Viewport ENABLED")
+		
+		xray_overlay.visible = true
+		xray_overlay.modulate.a = xray_current_alpha
+	
+	# ❌ ВЫКЛЮЧАЕМ только когда ПОЛНОСТЬЮ прозрачен
+	elif xray_current_alpha < 0.01:
+		xray_overlay.visible = false
+		xray_overlay.modulate.a = 0.0
+		
+		if xray_viewport.render_target_update_mode == SubViewport.UPDATE_ALWAYS:
+			xray_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
+			print("💤 X-Ray Viewport DISABLED")
+
+# ============================================
+# MULTI-RAY DETECTION
+# ============================================
+func _check_blocked_walls():
+	"""5-точечная проверка препятствий"""
+	
+	if not target or not xray_enabled:
+		xray_target_alpha = 0.0
+		return
+	
+	var space_state = get_world_3d().direct_space_state
+	var camera_pos = global_position
+	var player_origin = target.global_position
+	
+	# 🎯 Покрываем объём игрока
+	var check_points = [
+		Vector3(0, 0.8, 0),    # грудь
+		Vector3(0.4, 0.8, 0),  # плечо R
+		Vector3(-0.4, 0.8, 0), # плечо L
+		Vector3(0, 1.6, 0),    # голова
+		Vector3(0, 0.3, 0)     # низ
+	]
+	
+	var wall_detected = false
+	
+	for offset in check_points:
+		var target_point = player_origin + offset
+		var query = PhysicsRayQueryParameters3D.create(camera_pos, target_point)
+		query.collision_mask = 0xFFFFFFFF
+		query.exclude = [target]
+		query.collide_with_areas = false
+		query.hit_back_faces = false
+		
+		var result = space_state.intersect_ray(query)
+		
+		if not result.is_empty() and result.collider.is_in_group("wall"):
+			wall_detected = true
+			break
+	
+	# 🎯 Обновляем состояние
+	if wall_detected:
+		xray_target_alpha = 1.0
+		if current_xray_walls.is_empty():
+			print("👁️ X-Ray ON")
+		current_xray_walls = [true]
+	else:
+		xray_target_alpha = 0.0
+		if not current_xray_walls.is_empty():
+			print("✅ X-Ray OFF")
+		current_xray_walls.clear()
+
+# ============================================
+# EASING FUNCTIONS
+# ============================================
+func _ease_out_cubic(t: float) -> float:
+	"""Быстрый старт, плавное замедление (для появления)"""
+	return 1.0 - pow(1.0 - t, 3.0)
+
+func _ease_in_out_quad(t: float) -> float:
+	"""Плавный вход/выход (универсальный)"""
+	return t * t * (3.0 - 2.0 * t)
+
+# ============================================
+# ИНИЦИАЛИЗАЦИЯ X-RAY СИСТЕМЫ
+# ============================================
 func _create_xray_shader():
 	"""Создает X-Ray систему (отложенная инициализация)"""
 	call_deferred("_init_xray_system")
@@ -996,39 +1142,115 @@ func _create_xray_shader():
 func _init_xray_system():
 	"""Инициализация X-Ray после готовности дерева"""
 	
-	# 1️⃣ СОЗДАЕМ SUBVIEWPORT
+	# 1️⃣ SubViewport
 	xray_viewport = SubViewport.new()
 	xray_viewport.size = get_viewport().size
 	xray_viewport.transparent_bg = true
-	xray_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED  # 🔥 По умолчанию выключен
+	xray_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
 	add_child(xray_viewport)
 	
-	# 2️⃣ СОЗДАЕМ ДУБЛИРУЮЩУЮ КАМЕРУ
+	# 2️⃣ Дублирующая камера
 	xray_camera = Camera3D.new()
 	xray_camera.cull_mask = 0b00000010  # Только слой 2 (игрок)
 	xray_viewport.add_child(xray_camera)
 	
-	# 3️⃣ НАСТРАИВАЕМ ИГРОКА НА СЛОЙ 2
+	# 3️⃣ Настройка игрока на слой 2
 	if target:
 		_setup_player_xray_layer(target)
 	
-	# 4️⃣ СОЗДАЕМ ШЕЙДЕР ДЛЯ КОМПОЗИТИНГА
+	# 4️⃣ УЛУЧШЕННЫЙ ШЕЙДЕР (более яркий outline)
 	var shader_code = """
 shader_type canvas_item;
 
 uniform sampler2D main_scene : hint_screen_texture;
 uniform sampler2D xray_scene : source_color;
-uniform vec4 xray_color : source_color = vec4(0.0, 1.0, 0.0, 0.8);
-uniform float glow_intensity : hint_range(0.0, 10.0) = 3.0;
+uniform vec4 xray_color : source_color = vec4(0.0, 1.0, 0.5, 0.9);
+uniform float glow_intensity : hint_range(0.0, 10.0) = 0.0;
+uniform float time : hint_range(0.0, 100.0) = 0.0;
+
+// 🎨 Sci-Fi параметры
+uniform float scan_line_speed : hint_range(0.0, 5.0) = 0.0;
+uniform float scan_line_width : hint_range(0.0, 0.3) = 0.00;
+uniform float hologram_flicker : hint_range(0.0, 1.0) = 0.0;
+uniform float edge_glow_width : hint_range(0.0, 0.1) = 0.0;
+uniform float chromatic_aberration : hint_range(0.0, 0.02) = 0.000;
+
+// 🌊 Процедурный шум (заменяет текстуру)
+float hash(vec2 p) {
+	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+
+float noise(vec2 p) {
+	vec2 i = floor(p);
+	vec2 f = fract(p);
+	f = f * f * (3.0 - 2.0 * f); // smoothstep
+	
+	float a = hash(i);
+	float b = hash(i + vec2(1.0, 0.0));
+	float c = hash(i + vec2(0.0, 1.0));
+	float d = hash(i + vec2(1.0, 1.0));
+	
+	return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
+// 🔍 Определение краёв (Sobel-подобный)
+float detect_edges(sampler2D tex, vec2 uv, vec2 pixel_size) {
+	float edge = 0.0;
+	edge += texture(tex, uv + vec2(-pixel_size.x, 0)).a;
+	edge += texture(tex, uv + vec2(pixel_size.x, 0)).a;
+	edge += texture(tex, uv + vec2(0, -pixel_size.y)).a;
+	edge += texture(tex, uv + vec2(0, pixel_size.y)).a;
+	edge -= 4.0 * texture(tex, uv).a;
+	return abs(edge);
+}
 
 void fragment() {
 	vec4 main = texture(main_scene, SCREEN_UV);
-	vec4 xray = texture(xray_scene, SCREEN_UV);
 	
-	// Если на xray есть игрок - подсвечиваем
+	// 🎨 Хроматическая аберрация (RGB разделение)
+	float r = texture(xray_scene, SCREEN_UV + vec2(chromatic_aberration, 0)).a;
+	float g = texture(xray_scene, SCREEN_UV).a;
+	float b = texture(xray_scene, SCREEN_UV - vec2(chromatic_aberration, 0)).a;
+	vec4 xray = vec4(r, g, b, max(max(r, g), b));
+	
 	if (xray.a > 0.01) {
-		vec3 glow = xray_color.rgb * glow_intensity;
-		COLOR = vec4(mix(main.rgb, glow, xray.a * xray_color.a), 1.0);
+		vec2 pixel_size = vec2(1.0) / vec2(textureSize(xray_scene, 0));
+		
+		// 🔥 1. СКАНИРУЮЩАЯ ЛИНИЯ (движется сверху вниз)
+		float scan_pos = fract(time * scan_line_speed * 0.1);
+		float scan_dist = abs(SCREEN_UV.y - scan_pos);
+		float scan_line = smoothstep(scan_line_width, 0.0, scan_dist) * 0.8;
+		
+		// 🌊 2. ГОЛОГРАФИЧЕСКИЕ ИСКАЖЕНИЯ (волны)
+		float wave = sin(SCREEN_UV.y * 30.0 + time * 3.0) * 0.5 + 0.5;
+		float distortion = wave * hologram_flicker * 0.03;
+		vec2 distorted_uv = SCREEN_UV + vec2(distortion, 0);
+		
+		// ⚡ 3. ЦИФРОВОЙ ШУМ (мерцание пикселей)
+		float digital_noise = noise(SCREEN_UV * 800.0 + time * 20.0);
+		float flicker = mix(1.0, digital_noise, hologram_flicker * 0.3);
+		
+		// 💎 4. EDGE GLOW (яркие контуры)
+		float edge = detect_edges(xray_scene, SCREEN_UV, pixel_size);
+		float edge_intensity = smoothstep(0.0, edge_glow_width, edge) * 1.2;
+		
+		// 🎨 5. ГРАДИЕНТНАЯ КАРТА (киберпанк палитра)
+		vec3 color_base = xray_color.rgb;
+		vec3 color_highlight = vec3(0.0, 1.0, 1.0); // Cyan для краёв
+		vec3 final_color = mix(color_base, color_highlight, edge_intensity);
+		
+		// 🔥 6. ФИНАЛЬНАЯ КОМПОЗИЦИЯ
+		vec3 glow = final_color * glow_intensity * flicker;
+		glow += vec3(1.0) * scan_line * 2.0; // Яркая полоса сканера
+		glow += vec3(0.0, 0.8, 1.0) * edge_intensity * 1.5; // Голубые края
+		
+		// 🎭 Смешивание с основной сценой
+		float blend = xray.a * xray_color.a;
+		COLOR = vec4(mix(main.rgb, glow, blend * 0.75), 1.0);
+		
+		// 📺 Добавляем лёгкий "сканлайн" эффект (как на ЭЛТ)
+		float scanlines = sin(SCREEN_UV.y * 800.0) * 0.03;
+		COLOR.rgb -= scanlines * blend;
 	} else {
 		COLOR = main;
 	}
@@ -1042,75 +1264,38 @@ void fragment() {
 	xray_shader_material.shader = shader
 	xray_shader_material.set_shader_parameter("xray_color", xray_player_color)
 	xray_shader_material.set_shader_parameter("glow_intensity", xray_glow_intensity)
-	
-	# 5️⃣ СОЗДАЕМ OVERLAY COLORRECT
+	xray_shader_material.set_shader_parameter("xray_color", xray_player_color)
+	xray_shader_material.set_shader_parameter("glow_intensity", xray_glow_intensity)
+	xray_shader_material.set_shader_parameter("scan_line_speed", xray_scan_speed)
+	xray_shader_material.set_shader_parameter("scan_line_width", 0.08)
+	xray_shader_material.set_shader_parameter("hologram_flicker", xray_hologram_flicker)
+	xray_shader_material.set_shader_parameter("edge_glow_width", xray_edge_glow)
+	xray_shader_material.set_shader_parameter("chromatic_aberration", xray_chromatic)
+	# 5️⃣ Overlay ColorRect
 	xray_overlay = ColorRect.new()
 	xray_overlay.material = xray_shader_material
 	xray_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	xray_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	xray_overlay.visible = false  # Изначально скрыт
-	xray_overlay.modulate.a = 0.0  # 🔥 Полностью прозрачен
+	xray_overlay.visible = false
+	xray_overlay.modulate.a = 0.0
 	
-	# 6️⃣ ДОБАВЛЯЕМ В CANVASLAYER
+	# 6️⃣ CanvasLayer
 	var canvas_layer = CanvasLayer.new()
-	canvas_layer.layer = 100  # Поверх всего
+	canvas_layer.layer = 100
 	canvas_layer.name = "XRayOverlayLayer"
 	canvas_layer.add_child(xray_overlay)
 	
 	get_tree().root.call_deferred("add_child", canvas_layer)
 	
-	print("✅ X-Ray система создана (оптимизированная)")
+	print("✅ X-Ray система создана (Production Ready)")
 
 func _setup_player_xray_layer(player_node: Node):
 	"""Дублирует игрока на слой 2 для X-Ray"""
 	if player_node is VisualInstance3D:
-		# Добавляем слой 2, не удаляя слой 1
 		player_node.layers = 0b00000011  # Слои 1 и 2
 	
-	# Рекурсивно для детей
 	for child in player_node.get_children():
 		_setup_player_xray_layer(child)
-	
-func _check_blocked_walls():
-	if not target or not xray_enabled:
-		# 🔥 Отключаем overlay если система выключена
-		xray_target_alpha = 0.0
-		return
-	
-	var space_state = get_world_3d().direct_space_state
-	var from = global_position
-	var to = target.global_position
-	
-	# 🔥 ОПТИМИЗАЦИЯ: Один raycast с hit_back_faces
-	var query = PhysicsRayQueryParameters3D.create(from, to)
-	query.collision_mask = 0xFFFFFFFF
-	query.exclude = [target]
-	query.collide_with_areas = false
-	query.collide_with_bodies = true
-	query.hit_back_faces = false  # Игнорируем обратные стороны
-	
-	var result = space_state.intersect_ray(query)
-	
-	# 🔥 ПРОСТАЯ ЛОГИКА: Есть коллизия со стеной = включаем X-Ray
-	if not result.is_empty():
-		var collider = result.collider
-		
-		if collider.is_in_group("wall"):
-			# Стена найдена - включаем overlay
-			xray_target_alpha = 1.0
-			
-			if current_xray_walls.is_empty():
-				print("👁️ X-Ray активирован - игрок за стеной")
-			
-			current_xray_walls = [collider]
-			return
-	
-	# 🔥 Стен нет - выключаем overlay
-	if not current_xray_walls.is_empty():
-		print("✅ X-Ray деактивирован - путь свободен")
-	
-	xray_target_alpha = 0.0
-	current_xray_walls.clear()
 
 func get_current_mode() -> String:
 	if is_top_down_view:
