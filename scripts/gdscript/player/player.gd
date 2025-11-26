@@ -14,6 +14,7 @@ extends CharacterBody3D
 # --- Components ---
 @onready var navigation_component: NavigationComponent = $NavComponent
 @onready var stamina_manager: StaminaManager = $StaminaManager
+@onready var animation_player: AnimationPlayer = $player_base_mesh/AnimationPlayer
 
 # --- Movement State ---
 enum MovementState { IDLE, WALKING, RUNNING, DECELERATING }
@@ -289,3 +290,4 @@ func get_state_name() -> String:
 		MovementState.RUNNING: return "бежит"
 		MovementState.DECELERATING: return "тормозит"
 		_: return "неизвестно"
+		

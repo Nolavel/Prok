@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b0lowr57s1mq1"
-path.s3tc="res://.godot/imported/texture_08.png-ff8eae6edad41bf987e1f1d7482a862e.s3tc.ctex"
+uid="uid://dyijgf70pw3vm"
+path.s3tc="res://.godot/imported/decks.png-e5748f4e4c215f9eda5b0d8532de5ead.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://assets/textures/prototype_tex_kenney/PNG/Green/texture_08.png"
-dest_files=["res://.godot/imported/texture_08.png-ff8eae6edad41bf987e1f1d7482a862e.s3tc.ctex"]
+source_file="res://assets/textures/develop_signs/decks.png"
+dest_files=["res://.godot/imported/decks.png-e5748f4e4c215f9eda5b0d8532de5ead.s3tc.ctex"]
 
 [params]
 
