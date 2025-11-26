@@ -2223,7 +2223,524 @@ shape = SubResource("ConvexPolygonShape3D_neb5r")
 shape = SubResource("ConvexPolygonShape3D_ipven")
 
 [node name="Cryopod_Prok" parent="Crew Quarter" instance=ExtResource("4_n7p0j")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.667, 1.4881489, 119.91499)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.447754, 1.5, 120)
+
+[node name="Cryopod_Prok2" parent="Crew Quarter" instance=ExtResource("4_n7p0j")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.447754, 1.5, 114)
+
+[node name="Cryopod_Prok3" parent="Crew Quarter" instance=ExtResource("4_n7p0j")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.418518, 1.482544, 117)
+
+[node name="Cryo_Silo" type="Node3D" parent="Crew Quarter"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.594055, 0, 118.982666)
+
+[node name="CSGCombiner3D" type="CSGCombiner3D" parent="Crew Quarter/Cryo_Silo"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.275177, 0.29089355, 2.8658752)
+
+[node name="CSGBox3D" type="CSGBox3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-0.011414205, 0, -0.99993485, 0, 1, 0, 0.99993485, 0, -0.011414205, 0.10087776, -0.43579102, -4.8587036)
+size = Vector3(13.175712, 0.53796387, 7.755004)
+
+[node name="pf_crew_quarter" type="CSGPolygon3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(0.15, 0, 0, 0, -1.3113417e-08, 0.205, 0, -0.3, -8.960835e-09, 0, -0.037597656, -0.09298706)
+collision_layer = 3
+collision_mask = 3
+polygon = PackedVector2Array(20.5, 7.5, 20.5, 25, 10, 35, -10, 35, -20.5, 25, -20.5, 7.5, -10, -3, 10, -3)
+smooth_faces = true
+
+[node name="pf_crew_quarter2" type="CSGPolygon3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(0.14, 0, 0, 0, -1.2239188e-08, 0.205, 0, -0.28, -8.960835e-09, 0, -0.004760742, -0.3802185)
+collision_layer = 3
+collision_mask = 3
+polygon = PackedVector2Array(20.5, 7.5, 20.5, 25, 10, 35, -10, 35, -20.5, 25, -20.5, 7.5, -10, -3, 10, -3)
+smooth_faces = true
+
+[node name="CSGCylinder3D" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8465729, 0.07989502, -1.8691406)
+radius = 1.1
+height = 0.2
+sides = 64
+
+[node name="CSGCylinder3D2" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8465729, 0.07989502, -1.8691406)
+operation = 2
+radius = 1.0
+height = 0.2
+sides = 64
+
+[node name="CSGCylinder3D11" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3483429, 0.10097599, -1.8691406)
+operation = 2
+radius = 1.0
+height = 0.033
+sides = 64
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-0.011414205, 0, -0.99993485, 0, 1, 0, 0.99993485, 0, -0.011414205, -1.9221249, 0.19073486, -1.8476868)
+operation = 2
+size = Vector3(0.4, 0.32287598, 0.072021484)
+
+[node name="CSGCylinder3D3" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.3711385e-08, 0.99999994, 0, -0.99999994, -4.3711385e-08, 0, 0, 0, 1, -0.78946686, 0.083740234, -0.75083923)
+operation = 2
+radius = 0.055
+height = 1.5097656
+sides = 64
+
+[node name="CSGCylinder3D4" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.3711385e-08, 0.99999994, 0, -0.99999994, -4.3711385e-08, 0, 0, 0, 1, -0.78946686, 0.083740234, -2.9855957)
+operation = 2
+radius = 0.055
+height = 1.5097656
+sides = 64
+
+[node name="CSGCylinder3D5" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1.9106853e-15, -4.3711385e-08, 0.99999994, -0.9999999, -4.3711385e-08, 0, 4.3711385e-08, -0.99999994, -4.3711385e-08, 0.5575485, -0.20672607, -1.8942108)
+radius = 0.25
+height = 1.5097656
+sides = 64
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-0.011414205, 0, -0.99993485, 0, 1, 0, 0.99993485, 0, -0.011414205, 0.56723785, 0.15698242, -1.8889008)
+operation = 2
+size = Vector3(0.76650393, 0.32287598, 0.4560547)
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.371139e-08, -0.48328236, -0.8754647, 0, 0.87546456, -0.48328242, 1, -2.1124944e-08, -3.8267775e-08, -2.9635677, 0.14254022, -4.805191)
+operation = 2
+size = Vector3(6.8665037, 0.32287598, 0.59851074)
+
+[node name="CSGCylinder3D16" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8465729, 0.07989502, -1.8691406)
+radius = 1.1
+height = 0.2
+sides = 64
+
+[node name="CSGCylinder3D17" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8465729, 0.07989502, -1.8691406)
+operation = 2
+radius = 1.0
+height = 0.2
+sides = 64
+
+[node name="CSGCylinder3D18" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3483429, 0.10097599, -1.8691406)
+operation = 2
+radius = 1.0
+height = 0.033
+sides = 64
+
+[node name="CSGBox3D9" type="CSGBox3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-0.011414205, 0, -0.99993485, 0, 1, 0, 0.99993485, 0, -0.011414205, -1.9221249, 0.19073486, -1.8476868)
+operation = 2
+size = Vector3(0.4, 0.32287598, 0.072021484)
+
+[node name="CSGCylinder3D19" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.3711385e-08, 0.99999994, 0, -0.99999994, -4.3711385e-08, 0, 0, 0, 1, -0.78946686, 0.083740234, -0.75083923)
+operation = 2
+radius = 0.055
+height = 1.5097656
+sides = 64
+
+[node name="CSGCylinder3D20" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.3711385e-08, 0.99999994, 0, -0.99999994, -4.3711385e-08, 0, 0, 0, 1, -0.78946686, 0.083740234, -2.9855957)
+operation = 2
+radius = 0.055
+height = 1.5097656
+sides = 64
+
+[node name="CSGCylinder3D21" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1.9106853e-15, -4.3711385e-08, 0.99999994, -0.9999999, -4.3711385e-08, 0, 4.3711385e-08, -0.99999994, -4.3711385e-08, 0.5575485, -0.20672607, -1.8942108)
+radius = 0.25
+height = 1.5097656
+sides = 64
+
+[node name="CSGBox3D10" type="CSGBox3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-0.011414205, 0, -0.99993485, 0, 1, 0, 0.99993485, 0, -0.011414205, 0.56723785, 0.15698242, -1.8889008)
+operation = 2
+size = Vector3(0.76650393, 0.32287598, 0.4560547)
+
+[node name="CSGBox3D11" type="CSGBox3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.371139e-08, -0.48328236, -0.8754647, 0, 0.87546456, -0.48328242, 1, -2.1124944e-08, -3.8267775e-08, -2.9635677, 0.14254022, -4.805191)
+operation = 2
+size = Vector3(6.8665037, 0.32287598, 0.59851074)
+
+[node name="CSGBox3D8" type="CSGBox3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.371139e-08, -0.48328236, -0.8754647, 0, 0.87546456, -0.48328242, 1, -2.1124944e-08, -3.8267775e-08, -3.8766537, -0.17142463, -4.725128)
+operation = 2
+size = Vector3(14.109326, 0.32287598, 0.59851074)
+
+[node name="CSGBox3D5" type="CSGBox3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.371139e-08, -0.8480481, -0.5299193, 0, 0.52991927, -0.8480482, 1, -3.706936e-08, -2.316351e-08, 3.1842594, 0.14254022, -4.805191)
+operation = 2
+size = Vector3(6.8665037, 0.32287598, 0.59851074)
+
+[node name="CSGBox3D6" type="CSGBox3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-1, -7.413872e-08, -4.632702e-08, 0, 0.52991927, -0.8480482, 8.742278e-08, -0.8480481, -0.5299193, 0.50115395, 0.18520379, 0.84776306)
+operation = 2
+size = Vector3(6.8665037, 0.32287598, 0.59851074)
+
+[node name="CSGBox3D7" type="CSGBox3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-1, 8.0473086e-08, -3.41588e-08, 0, 0.39073104, 0.920505, 8.742278e-08, 0.9205048, -0.39073113, 0.50115395, 0.18520379, -10.632217)
+operation = 2
+size = Vector3(6.8665037, 0.32287598, 0.59851074)
+
+[node name="CSGCylinder3D6" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1.9106853e-15, -4.3711385e-08, 0.99999994, -0.9999999, -4.3711385e-08, 0, 4.3711385e-08, -0.99999994, -4.3711385e-08, 0.57149506, 0.07635498, -0.6207123)
+operation = 2
+radius = 0.055
+height = 1.2495117
+sides = 64
+
+[node name="CSGCylinder3D8" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(4.3711385e-08, -3.8213705e-15, 0.99999994, -8.742277e-08, -0.99999994, 0, 0.9999999, -8.742277e-08, -4.3711385e-08, 0.57149506, 0.07635498, -1.6564026)
+operation = 2
+radius = 0.1
+height = 0.59
+sides = 64
+
+[node name="CSGCylinder3D9" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(4.3711385e-08, -3.8213705e-15, 0.99999994, -8.742277e-08, -0.99999994, 0, 0.9999999, -8.742277e-08, -4.3711385e-08, 0.57149506, 0.07635498, -1.8951721)
+operation = 2
+radius = 0.1
+height = 0.59
+sides = 64
+
+[node name="CSGCylinder3D10" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(4.3711385e-08, -3.8213705e-15, 0.99999994, -8.742277e-08, -0.99999994, 0, 0.9999999, -8.742277e-08, -4.3711385e-08, 0.57149506, 0.07635498, -2.1306)
+operation = 2
+radius = 0.1
+height = 0.59
+sides = 64
+
+[node name="CSGCylinder3D7" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1.9106853e-15, -4.3711385e-08, 0.99999994, -0.9999999, -4.3711385e-08, 0, 4.3711385e-08, -0.99999994, -4.3711385e-08, 0.57149506, 0.07635498, -3.1597443)
+operation = 2
+radius = 0.055
+height = 1.2495117
+sides = 64
+
+[node name="CSGCylinder3D12" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.3711385e-08, 0.99999994, 0, -0.99999994, -4.3711385e-08, 0, 0, 0, 1, 3.1211166, -0.17962658, 1.3573303)
+operation = 2
+radius = 0.055
+height = 2.3048096
+sides = 64
+
+[node name="CSGCylinder3D13" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.3711385e-08, 0.99999994, 0, -0.99999994, -4.3711385e-08, 0, 0, 0, 1, 3.1211166, -0.17962658, 1.059845)
+operation = 2
+radius = 0.055
+height = 2.3048096
+sides = 64
+
+[node name="CSGCylinder3D14" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.3711385e-08, 0.99999994, 0, -0.99999994, -4.3711385e-08, 0, 0, 0, 1, 3.1211166, -0.17962658, -10.699539)
+operation = 2
+radius = 0.055
+height = 2.3048096
+sides = 64
+
+[node name="CSGCylinder3D15" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.3711385e-08, 0.99999994, 0, -0.99999994, -4.3711385e-08, 0, 0, 0, 1, 3.1211166, -0.17962658, -10.997025)
+operation = 2
+radius = 0.055
+height = 2.3048096
+sides = 64
+
+[node name="CSGCylinder3D22" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8465729, 0.07989502, -7.8735657)
+radius = 1.1
+height = 0.2
+sides = 64
+
+[node name="CSGCylinder3D23" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8465729, 0.07989502, -7.8735657)
+operation = 2
+radius = 1.0
+height = 0.2
+sides = 64
+
+[node name="CSGCylinder3D24" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3483429, 0.10097599, -7.8735657)
+operation = 2
+radius = 1.0
+height = 0.033
+sides = 64
+
+[node name="CSGBox3D12" type="CSGBox3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-0.011414205, 0, -0.99993485, 0, 1, 0, 0.99993485, 0, -0.011414205, -1.9221249, 0.19073486, -7.852112)
+operation = 2
+size = Vector3(0.4, 0.32287598, 0.072021484)
+
+[node name="CSGCylinder3D25" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.3711385e-08, 0.99999994, 0, -0.99999994, -4.3711385e-08, 0, 0, 0, 1, -0.78946686, 0.083740234, -6.7552643)
+operation = 2
+radius = 0.055
+height = 1.5097656
+sides = 64
+
+[node name="CSGCylinder3D26" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.3711385e-08, 0.99999994, 0, -0.99999994, -4.3711385e-08, 0, 0, 0, 1, -0.78946686, 0.083740234, -8.990021)
+operation = 2
+radius = 0.055
+height = 1.5097656
+sides = 64
+
+[node name="CSGCylinder3D27" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1.9106853e-15, -4.3711385e-08, 0.99999994, -0.9999999, -4.3711385e-08, 0, 4.3711385e-08, -0.99999994, -4.3711385e-08, 0.5575485, -0.20672607, -7.898636)
+radius = 0.25
+height = 1.5097656
+sides = 64
+
+[node name="CSGBox3D13" type="CSGBox3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-0.011414205, 0, -0.99993485, 0, 1, 0, 0.99993485, 0, -0.011414205, 0.56723785, 0.15698242, -7.893326)
+operation = 2
+size = Vector3(0.76650393, 0.32287598, 0.4560547)
+
+[node name="CSGBox3D14" type="CSGBox3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.371139e-08, -0.48328236, -0.8754647, 0, 0.87546456, -0.48328242, 1, -2.1124944e-08, -3.8267775e-08, -2.9635677, 0.14254022, -10.809616)
+operation = 2
+size = Vector3(6.8665037, 0.32287598, 0.59851074)
+
+[node name="CSGBox3D15" type="CSGBox3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-0.011414205, 0, -0.99993485, 0, 1, 0, 0.99993485, 0, -0.011414205, -1.9221249, 0.19073486, -7.852112)
+operation = 2
+size = Vector3(0.4, 0.32287598, 0.072021484)
+
+[node name="CSGCylinder3D28" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.3711385e-08, 0.99999994, 0, -0.99999994, -4.3711385e-08, 0, 0, 0, 1, -0.78946686, 0.083740234, -6.7552643)
+operation = 2
+radius = 0.055
+height = 1.5097656
+sides = 64
+
+[node name="CSGCylinder3D29" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.3711385e-08, 0.99999994, 0, -0.99999994, -4.3711385e-08, 0, 0, 0, 1, -0.78946686, 0.083740234, -8.990021)
+operation = 2
+radius = 0.055
+height = 1.5097656
+sides = 64
+
+[node name="CSGCylinder3D30" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1.9106853e-15, -4.3711385e-08, 0.99999994, -0.9999999, -4.3711385e-08, 0, 4.3711385e-08, -0.99999994, -4.3711385e-08, 0.5575485, -0.20672607, -7.898636)
+radius = 0.25
+height = 1.5097656
+sides = 64
+
+[node name="CSGBox3D16" type="CSGBox3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-0.011414205, 0, -0.99993485, 0, 1, 0, 0.99993485, 0, -0.011414205, 0.56723785, 0.15698242, -7.893326)
+operation = 2
+size = Vector3(0.76650393, 0.32287598, 0.4560547)
+
+[node name="CSGBox3D17" type="CSGBox3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.371139e-08, -0.48328236, -0.8754647, 0, 0.87546456, -0.48328242, 1, -2.1124944e-08, -3.8267775e-08, -2.9635677, 0.14254022, -10.809616)
+operation = 2
+size = Vector3(6.8665037, 0.32287598, 0.59851074)
+
+[node name="CSGBox3D18" type="CSGBox3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.371139e-08, -0.48328236, -0.8754647, 0, 0.87546456, -0.48328242, 1, -2.1124944e-08, -3.8267775e-08, -3.8766537, -0.17142463, -10.729553)
+operation = 2
+size = Vector3(14.109326, 0.32287598, 0.59851074)
+
+[node name="CSGBox3D21" type="CSGBox3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-1, 8.0473086e-08, -3.41588e-08, 0, 0.39073104, 0.920505, 8.742278e-08, 0.9205048, -0.39073113, 0.50115395, 0.18520379, -16.636642)
+operation = 2
+size = Vector3(6.8665037, 0.32287598, 0.59851074)
+
+[node name="CSGCylinder3D31" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1.9106853e-15, -4.3711385e-08, 0.99999994, -0.9999999, -4.3711385e-08, 0, 4.3711385e-08, -0.99999994, -4.3711385e-08, 0.57149506, 0.07635498, -6.6251373)
+operation = 2
+radius = 0.055
+height = 1.2495117
+sides = 64
+
+[node name="CSGCylinder3D32" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(4.3711385e-08, -3.8213705e-15, 0.99999994, -8.742277e-08, -0.99999994, 0, 0.9999999, -8.742277e-08, -4.3711385e-08, 0.57149506, 0.07635498, -7.6608276)
+operation = 2
+radius = 0.1
+height = 0.59
+sides = 64
+
+[node name="CSGCylinder3D33" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(4.3711385e-08, -3.8213705e-15, 0.99999994, -8.742277e-08, -0.99999994, 0, 0.9999999, -8.742277e-08, -4.3711385e-08, 0.57149506, 0.07635498, -7.899597)
+operation = 2
+radius = 0.1
+height = 0.59
+sides = 64
+
+[node name="CSGCylinder3D34" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(4.3711385e-08, -3.8213705e-15, 0.99999994, -8.742277e-08, -0.99999994, 0, 0.9999999, -8.742277e-08, -4.3711385e-08, 0.57149506, 0.07635498, -8.135025)
+operation = 2
+radius = 0.1
+height = 0.59
+sides = 64
+
+[node name="CSGCylinder3D35" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1.9106853e-15, -4.3711385e-08, 0.99999994, -0.9999999, -4.3711385e-08, 0, 4.3711385e-08, -0.99999994, -4.3711385e-08, 0.57149506, 0.07635498, -9.164169)
+operation = 2
+radius = 0.055
+height = 1.2495117
+sides = 64
+
+[node name="CSGCylinder3D38" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.3711385e-08, 0.99999994, 0, -0.99999994, -4.3711385e-08, 0, 0, 0, 1, 3.1211166, -0.17962658, -16.703964)
+operation = 2
+radius = 0.055
+height = 2.3048096
+sides = 64
+
+[node name="CSGCylinder3D39" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.3711385e-08, 0.99999994, 0, -0.99999994, -4.3711385e-08, 0, 0, 0, 1, 3.1211166, -0.17962658, -17.00145)
+operation = 2
+radius = 0.055
+height = 2.3048096
+sides = 64
+
+[node name="CSGCylinder3D36" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0491257, 0.07989502, -4.82959)
+radius = 1.1
+height = 0.2
+sides = 64
+
+[node name="CSGCylinder3D37" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0491257, 0.07989502, -4.82959)
+operation = 2
+radius = 1.0
+height = 0.2
+sides = 64
+
+[node name="CSGCylinder3D40" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5473557, 0.10097599, -4.82959)
+operation = 2
+radius = 1.0
+height = 0.033
+sides = 64
+
+[node name="CSGBox3D19" type="CSGBox3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-0.011414205, 0, -0.99993485, 0, 1, 0, 0.99993485, 0, -0.011414205, -0.026426315, 0.19073486, -4.808136)
+operation = 2
+size = Vector3(0.4, 0.32287598, 0.072021484)
+
+[node name="CSGCylinder3D41" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.3711385e-08, 0.99999994, 0, -0.99999994, -4.3711385e-08, 0, 0, 0, 1, 1.1062317, 0.083740234, -3.7112885)
+operation = 2
+radius = 0.055
+height = 1.5097656
+sides = 64
+
+[node name="CSGCylinder3D42" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.3711385e-08, 0.99999994, 0, -0.99999994, -4.3711385e-08, 0, 0, 0, 1, 1.1062317, 0.083740234, -5.946045)
+operation = 2
+radius = 0.055
+height = 1.5097656
+sides = 64
+
+[node name="CSGCylinder3D43" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1.9106853e-15, -4.3711385e-08, 0.99999994, -0.9999999, -4.3711385e-08, 0, 4.3711385e-08, -0.99999994, -4.3711385e-08, 2.453247, -0.20672607, -4.85466)
+radius = 0.25
+height = 1.5097656
+sides = 64
+
+[node name="CSGBox3D20" type="CSGBox3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-0.011414205, 0, -0.99993485, 0, 1, 0, 0.99993485, 0, -0.011414205, 2.4629364, 0.15698242, -4.84935)
+operation = 2
+size = Vector3(0.76650393, 0.32287598, 0.4560547)
+
+[node name="CSGBox3D23" type="CSGBox3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-0.011414205, 0, -0.99993485, 0, 1, 0, 0.99993485, 0, -0.011414205, -0.026426315, 0.19073486, -4.808136)
+operation = 2
+size = Vector3(0.4, 0.32287598, 0.072021484)
+
+[node name="CSGCylinder3D44" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.3711385e-08, 0.99999994, 0, -0.99999994, -4.3711385e-08, 0, 0, 0, 1, 1.1062317, 0.083740234, -3.7112885)
+operation = 2
+radius = 0.055
+height = 1.5097656
+sides = 64
+
+[node name="CSGCylinder3D45" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.3711385e-08, 0.99999994, 0, -0.99999994, -4.3711385e-08, 0, 0, 0, 1, 1.1062317, 0.083740234, -5.946045)
+operation = 2
+radius = 0.055
+height = 1.5097656
+sides = 64
+
+[node name="CSGCylinder3D46" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1.9106853e-15, -4.3711385e-08, 0.99999994, -0.9999999, -4.3711385e-08, 0, 4.3711385e-08, -0.99999994, -4.3711385e-08, 2.453247, -0.20672607, -4.85466)
+radius = 0.25
+height = 1.5097656
+sides = 64
+
+[node name="CSGBox3D24" type="CSGBox3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-0.011414205, 0, -0.99993485, 0, 1, 0, 0.99993485, 0, -0.011414205, 2.4629364, 0.15698242, -4.84935)
+operation = 2
+size = Vector3(0.76650393, 0.32287598, 0.4560547)
+
+[node name="CSGBox3D27" type="CSGBox3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-1, 8.0473086e-08, -3.41588e-08, 0, 0.39073104, 0.920505, 8.742278e-08, 0.9205048, -0.39073113, 2.3968525, 0.18520379, -13.592667)
+operation = 2
+size = Vector3(6.8665037, 0.32287598, 0.59851074)
+
+[node name="CSGCylinder3D47" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1.9106853e-15, -4.3711385e-08, 0.99999994, -0.9999999, -4.3711385e-08, 0, 4.3711385e-08, -0.99999994, -4.3711385e-08, 2.4671936, 0.07635498, -3.5811615)
+operation = 2
+radius = 0.055
+height = 1.2495117
+sides = 64
+
+[node name="CSGCylinder3D48" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(4.3711385e-08, -3.8213705e-15, 0.99999994, -8.742277e-08, -0.99999994, 0, 0.9999999, -8.742277e-08, -4.3711385e-08, 2.4671936, 0.07635498, -4.616852)
+operation = 2
+radius = 0.1
+height = 0.59
+sides = 64
+
+[node name="CSGCylinder3D49" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(4.3711385e-08, -3.8213705e-15, 0.99999994, -8.742277e-08, -0.99999994, 0, 0.9999999, -8.742277e-08, -4.3711385e-08, 2.4671936, 0.07635498, -4.8556213)
+operation = 2
+radius = 0.1
+height = 0.59
+sides = 64
+
+[node name="CSGCylinder3D50" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(4.3711385e-08, -3.8213705e-15, 0.99999994, -8.742277e-08, -0.99999994, 0, 0.9999999, -8.742277e-08, -4.3711385e-08, 2.4671936, 0.07635498, -5.091049)
+operation = 2
+radius = 0.1
+height = 0.59
+sides = 64
+
+[node name="CSGCylinder3D51" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1.9106853e-15, -4.3711385e-08, 0.99999994, -0.9999999, -4.3711385e-08, 0, 4.3711385e-08, -0.99999994, -4.3711385e-08, 2.4671936, 0.07635498, -6.1201935)
+operation = 2
+radius = 0.055
+height = 1.2495117
+sides = 64
+
+[node name="CSGCylinder3D52" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.3711385e-08, 0.99999994, 0, -0.99999994, -4.3711385e-08, 0, 0, 0, 1, 5.016815, -0.17962658, -13.659988)
+operation = 2
+radius = 0.055
+height = 2.3048096
+sides = 64
+
+[node name="CSGCylinder3D53" type="CSGCylinder3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(-4.3711385e-08, 0.99999994, 0, -0.99999994, -4.3711385e-08, 0, 0, 0, 1, 5.016815, -0.17962658, -13.957474)
+operation = 2
+radius = 0.055
+height = 2.3048096
+sides = 64
+
+[node name="CSGSphere3D" type="CSGSphere3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.9385986, -0.37780762, 0)
+radial_segments = 64
+rings = 12
+
+[node name="CSGSphere3D2" type="CSGSphere3D" parent="Crew Quarter/Cryo_Silo/CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1831055, -0.21850586, 0.2791443)
+radius = 0.15
+radial_segments = 64
+rings = 12
 
 [node name="Mess Hall" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -43.623, 1, 52.772)
