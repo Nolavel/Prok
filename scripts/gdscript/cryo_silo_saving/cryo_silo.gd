@@ -1,154 +1,203 @@
+## ============================================
+## CRYO_SILO_MANAGER.gd - Главный менеджер системы (ИСПРАВЛЕНО)
+## ============================================
 extends Node3D
+class_name CryoSiloManager
 
-# === СОСТОЯНИЯ СИЛО ===
-enum SiloState {
-	SILO_DOWN,
-	SILO_RISING,
-	SILO_UP,
-	CAPS_RISING,
-	CAPS_UP,
-	CAPS_LOWERING,
-	SILO_LOWERING
-}
+signal silo_state_changed(is_raised: bool)
+signal capsules_state_changed(are_raised: bool)
+signal animation_started
+signal animation_finished
+signal sleep_sequence_completed
+signal wake_sequence_completed
 
-# === СИГНАЛЫ ===
-signal silo_state_changed(new_state: SiloState)
-signal player_in_silo_range_changed(is_in_range: bool)
+@onready var animation_player: AnimationPlayer = $Anima
+@onready var control_panel: ControlPanel = $ControlPanel
 
-# === ССЫЛКИ ===
-@onready var anima_cryo_silo: AnimationPlayer = $Anima
-@onready var interaction_area: Area3D = $Area_Interaction
+# Ссылки на капсулы
+@export var cryopod_1: CryoPod
+@export var cryopod_2: CryoPod
+@export var cryopod_3: CryoPod
 
-# === СОСТОЯНИЕ ===
-var current_state: SiloState = SiloState.SILO_DOWN
-var player_in_range: bool = false
+# Состояния системы
+var is_silo_raised: bool = false
+var are_capsules_raised: bool = false
+var is_animating: bool = false
 
 func _ready() -> void:
-	anima_cryo_silo.play("Cryo_Pit_Locked")  # Idle состояние
-	_change_state(SiloState.SILO_DOWN)
+	# Начальное состояние - сило опущен
+	animation_player.play("Cryo_Pit_Locked")
+	is_silo_raised = false
+	are_capsules_raised = false
 	
-	# Подключаем сигналы Area3D
-	if interaction_area:
-		interaction_area.body_entered.connect(_on_body_entered)
-		interaction_area.body_exited.connect(_on_body_exited)
-		print("✅ Cryo_Silo: Area3D подключена")
+	# Подключаем капсулы к менеджеру
+	if cryopod_1:
+		cryopod_1.capsule_state_changed.connect(_on_capsule_state_changed)
+	if cryopod_2:
+		cryopod_2.capsule_state_changed.connect(_on_capsule_state_changed)
+	if cryopod_3:
+		cryopod_3.capsule_state_changed.connect(_on_capsule_state_changed)
+	
+	print("✅ Cryo Silo Manager: Инициализирован")
+
+## === УПРАВЛЕНИЕ СИЛО ===
+func toggle_silo() -> void:
+	if is_animating:
+		print("⚠️ Анимация уже выполняется!")
+		return
+	
+	# НОВАЯ ПРОВЕРКА: Нельзя опустить сило если капсулы подняты
+	if is_silo_raised and are_capsules_raised:
+		print("⚠️ Нельзя опустить сило - сначала опустите капсулы!")
+		return
+	
+	is_animating = true
+	animation_started.emit()
+	
+	if is_silo_raised:
+		# Опускаем сило
+		animation_player.play("down_caps")
+		await animation_player.animation_finished
+		is_silo_raised = false
+		print("🔽 Сило опущен")
 	else:
-		push_error("❌ Area3D не найдена!")
+		# Поднимаем сило
+		animation_player.play_backwards("down_caps")
+		await animation_player.animation_finished
+		is_silo_raised = true
+		print("🔼 Сило поднят")
+	
+	is_animating = false
+	animation_finished.emit()
+	silo_state_changed.emit(is_silo_raised)
 
-# === СМЕНА СОСТОЯНИЯ ===
-func _change_state(new_state: SiloState) -> void:
-	current_state = new_state
-	silo_state_changed.emit(new_state)
-	print("🔄 Silo State: ", SiloState.keys()[new_state])
+## === УПРАВЛЕНИЕ КАПСУЛАМИ (все 3 одновременно) ===
+func toggle_capsules() -> void:
+	if is_animating:
+		print("⚠️ Анимация уже выполняется!")
+		return
+	
+	# Проверка: нельзя поднять если сило опущен
+	if not are_capsules_raised and not is_silo_raised:
+		print("⚠️ Нельзя поднять капсулы - сначала поднимите сило!")
+		return
+	
+	# Проверка: нельзя опустить, если хотя бы одна капсула открыта
+	if are_capsules_raised and _any_capsule_open():
+		print("⚠️ Нельзя опустить капсулы - одна из них открыта!")
+		return
+	
+	is_animating = true
+	animation_started.emit()
+	
+	if are_capsules_raised:
+		# Опускаем капсулы
+		animation_player.play_backwards("caps_3_move")
+		await animation_player.animation_finished
+		animation_player.play_backwards("caps_2_move")
+		await animation_player.animation_finished
+		animation_player.play_backwards("caps_1_move")
+		await animation_player.animation_finished
+		are_capsules_raised = false
+		print("🔽 Капсулы опущены")
+	else:
+		# Поднимаем капсулы
+		animation_player.play("caps_1_move")
+		await animation_player.animation_finished
+		animation_player.play("caps_2_move")
+		await animation_player.animation_finished
+		animation_player.play("caps_3_move")
+		await animation_player.animation_finished
+		are_capsules_raised = true
+		print("🔼 Капсулы подняты")
+	
+	is_animating = false
+	animation_finished.emit()
+	capsules_state_changed.emit(are_capsules_raised)
 
-# === ПУБЛИЧНЫЙ МЕТОД ДЛЯ ПОЛУЧЕНИЯ ТЕКУЩЕГО СОСТОЯНИЯ ===
-func get_current_state() -> SiloState:
-	return current_state
+## === ПОСЛЕДОВАТЕЛЬНОСТИ ===
+func start_sleep_sequence(cryopod: CryoPod) -> void:
+	if is_animating:
+		return
+	
+	is_animating = true
+	animation_started.emit()
+	print("😴 Начало последовательности сна...")
+	
+	# 1. Закрыть капсулу
+	if cryopod.is_open:
+		await cryopod.close_capsule()
+	
+	# 2. Опустить капсулы
+	if are_capsules_raised:
+		animation_player.play_backwards("caps_3_move")
+		await animation_player.animation_finished
+		animation_player.play_backwards("caps_2_move")
+		await animation_player.animation_finished
+		animation_player.play_backwards("caps_1_move")
+		await animation_player.animation_finished
+		are_capsules_raised = false
+	
+	# 3. Опустить сило
+	if is_silo_raised:
+		animation_player.play("down_caps")
+		await animation_player.animation_finished
+		is_silo_raised = false
+	
+	is_animating = false
+	animation_finished.emit()
+	sleep_sequence_completed.emit()
+	print("😴 Последовательность сна завершена")
 
-# === ПУБЛИЧНЫЙ МЕТОД ДЛЯ UI ===
-func on_button_pressed() -> void:
-	match current_state:
-		SiloState.SILO_DOWN:
-			_raise_silo()
-		SiloState.SILO_UP:
-			_raise_caps()
-		SiloState.CAPS_UP:
-			_lower_caps()
+func start_wake_sequence(cryopod: CryoPod) -> void:
+	if is_animating:
+		return
+	
+	is_animating = true
+	animation_started.emit()
+	print("☀️ Начало последовательности пробуждения...")
+	
+	# 1. Поднять сило
+	if not is_silo_raised:
+		animation_player.play_backwards("down_caps")
+		await animation_player.animation_finished
+		is_silo_raised = true
+	
+	# 2. Поднять капсулы
+	if not are_capsules_raised:
+		animation_player.play("caps_1_move")
+		await animation_player.animation_finished
+		animation_player.play("caps_2_move")
+		await animation_player.animation_finished
+		animation_player.play("caps_3_move")
+		await animation_player.animation_finished
+		are_capsules_raised = true
+	
+	# 3. Открыть капсулу
+	if not cryopod.is_open:
+		await cryopod.open_capsule()
+	
+	# 4. Опустить сило обратно
+	if is_silo_raised:
+		animation_player.play("down_caps")
+		await animation_player.animation_finished
+		is_silo_raised = false
+	
+	is_animating = false
+	animation_finished.emit()
+	wake_sequence_completed.emit()
+	print("☀️ Последовательность пробуждения завершена")
 
-# === ПУБЛИЧНЫЕ МЕТОДЫ ДЛЯ ВТОРОЙ КНОПКИ UI ===
-func lower_silo_from_ui() -> void:
-	if current_state == SiloState.SILO_UP:
-		_lower_silo()
+## === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
+func _any_capsule_open() -> bool:
+	var result = false
+	if cryopod_1 and cryopod_1.is_open:
+		result = true
+	if cryopod_2 and cryopod_2.is_open:
+		result = true
+	if cryopod_3 and cryopod_3.is_open:
+		result = true
+	return result
 
-func lower_caps_from_ui() -> void:
-	if current_state == SiloState.CAPS_UP:
-		_lower_caps()
-
-# === ПОДНЯТИЕ СИЛО ===
-func _raise_silo() -> void:
-	_change_state(SiloState.SILO_RISING)
-	anima_cryo_silo.play_backwards("down_caps")
-	await anima_cryo_silo.animation_finished
-	_change_state(SiloState.SILO_UP)
-
-# === ПОДНЯТИЕ КАПСУЛ ===
-func _raise_caps() -> void:
-	_change_state(SiloState.CAPS_RISING)
-	
-	anima_cryo_silo.play("caps_1_move")
-	await anima_cryo_silo.animation_finished
-	
-	anima_cryo_silo.play("caps_2_move")
-	await anima_cryo_silo.animation_finished
-	
-	anima_cryo_silo.play("caps_3_move")
-	await anima_cryo_silo.animation_finished
-	
-	_change_state(SiloState.CAPS_UP)
-
-# === ОПУСКАНИЕ КАПСУЛ ===
-func _lower_caps() -> void:
-	_change_state(SiloState.CAPS_LOWERING)
-	
-	anima_cryo_silo.play_backwards("caps_3_move")
-	await anima_cryo_silo.animation_finished
-	
-	anima_cryo_silo.play_backwards("caps_2_move")
-	await anima_cryo_silo.animation_finished
-	
-	anima_cryo_silo.play_backwards("caps_1_move")
-	await anima_cryo_silo.animation_finished
-	
-	_change_state(SiloState.SILO_UP)
-
-# === ОПУСКАНИЕ СИЛО ===
-func _lower_silo() -> void:
-	_change_state(SiloState.SILO_LOWERING)
-	anima_cryo_silo.play("down_caps")
-	await anima_cryo_silo.animation_finished
-	_change_state(SiloState.SILO_DOWN)
-
-# === ПОЛНАЯ ПОСЛЕДОВАТЕЛЬНОСТЬ ЗАСЫПАНИЯ ===
-func start_sleep_sequence() -> void:
-	print("🌙 Silo: Начинаем полную последовательность засыпания...")
-	
-	# Вызывается из Cryopod после закрытия капсулы
-	_change_state(SiloState.CAPS_LOWERING)
-	
-	# Опускаем капсулы
-	print("⬇️ Опускаем капсулу 3...")
-	anima_cryo_silo.play_backwards("caps_3_move")
-	await anima_cryo_silo.animation_finished
-	
-	print("⬇️ Опускаем капсулу 2...")
-	anima_cryo_silo.play_backwards("caps_2_move")
-	await anima_cryo_silo.animation_finished
-	
-	print("⬇️ Опускаем капсулу 1...")
-	anima_cryo_silo.play_backwards("caps_1_move")
-	await anima_cryo_silo.animation_finished
-	print("✅ Капсулы опущены")
-	
-	# Опускаем сило
-	_change_state(SiloState.SILO_LOWERING)
-	print("⬇️ Опускаем сило...")
-	anima_cryo_silo.play("down_caps")
-	await anima_cryo_silo.animation_finished
-	print("✅ Сило опущен")
-	
-	# Возврат в начальное состояние
-	_change_state(SiloState.SILO_DOWN)
-	print("🌙 Последовательность засыпания ЗАВЕРШЕНА! Все системы в исходном положении.")
-
-# === КОЛЛБЭКИ AREA3D ===
-func _on_body_entered(body: Node3D) -> void:
-	if body.name == "Player":
-		player_in_range = true
-		player_in_silo_range_changed.emit(true)
-		print("👤 Игрок вошёл в зону Сило")
-
-func _on_body_exited(body: Node3D) -> void:
-	if body.name == "Player":
-		player_in_range = false
-		player_in_silo_range_changed.emit(false)
-		print("🚶 Игрок вышел из зоны Сило")
+func _on_capsule_state_changed(is_open: bool, capsule_id: int) -> void:
+	print("📡 Капсула %d изменила состояние: %s" % [capsule_id, "открыта" if is_open else "закрыта"])

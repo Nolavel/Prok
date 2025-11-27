@@ -1,4 +1,4 @@
-[gd_scene load_steps=95 format=4 uid="uid://bkfi5x6sf1w2a"]
+[gd_scene load_steps=94 format=4 uid="uid://bkfi5x6sf1w2a"]
 
 [ext_resource type="PackedScene" uid="uid://dbt6w4pr2h3re" path="res://scenes/elevator/lift.tscn" id="1_ljh6w"]
 [ext_resource type="PackedScene" uid="uid://cvuw2ef72te81" path="res://tools/InputDebugger/InputDebugger.tscn" id="1_qvqwg"]
@@ -18,7 +18,6 @@
 [ext_resource type="FontFile" uid="uid://6dkd18d8i6x8" path="res://assets/fonts/CGF_Locust_Resistance/cgf-locust-resistance.regular.ttf" id="13_gtgns"]
 [ext_resource type="PackedScene" uid="uid://qw57l1jftjmn" path="res://scenes/test_scene/hazard_cube.tscn" id="14_esmo2"]
 [ext_resource type="Script" uid="uid://uydn5no0tkhq" path="res://scripts/gdscript/outer_spaceship_modify/modify_spaceship.gd" id="15_vgvdj"]
-[ext_resource type="Script" uid="uid://bw7wlemxw6vt" path="res://scripts/gdscript/cryo_silo_saving/cryo_silo_ui.gd" id="16_gtgns"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_1lydy"]
 margin = 1.0
@@ -707,14 +706,21 @@ exit_scene = false
 [node name="DECK_B" parent="." instance=ExtResource("5_jpp7u")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.16543579, -44.49, 0.16543579)
 
-[node name="Cryopod_Prok_R" parent="DECK_B/Crew Quarter/Cryo_Silo/Lockers" index="0" node_paths=PackedStringArray("silo")]
-silo = NodePath("../..")
+[node name="Cryo_Silo" parent="DECK_B/Crew Quarter" index="3" node_paths=PackedStringArray("cryopod_1", "cryopod_2", "cryopod_3")]
+cryopod_1 = NodePath("Lockers/Cryopod_Prok_R")
+cryopod_2 = NodePath("Lockers/Cryopod_Prok2_L")
+cryopod_3 = NodePath("Lockers/Cryopod_Prok3_C")
 
-[node name="Cryopod_Prok2_L" parent="DECK_B/Crew Quarter/Cryo_Silo/Lockers" index="1" node_paths=PackedStringArray("silo")]
-silo = NodePath("../..")
+[node name="Cryopod_Prok_R" parent="DECK_B/Crew Quarter/Cryo_Silo/Lockers" index="0" node_paths=PackedStringArray("ground_collision")]
+ground_collision = NodePath("../../../Mesh_Crew_Quarter_Ground_0/StaticBody3D/CollisionShape3D")
 
-[node name="Cryopod_Prok3_C" parent="DECK_B/Crew Quarter/Cryo_Silo/Lockers" index="2" node_paths=PackedStringArray("silo")]
-silo = NodePath("../..")
+[node name="Cryopod_Prok2_L" parent="DECK_B/Crew Quarter/Cryo_Silo/Lockers" index="1" node_paths=PackedStringArray("ground_collision")]
+capsule_id = 2
+ground_collision = NodePath("../../../Mesh_Crew_Quarter_Ground_0/StaticBody3D/CollisionShape3D")
+
+[node name="Cryopod_Prok3_C" parent="DECK_B/Crew Quarter/Cryo_Silo/Lockers" index="2" node_paths=PackedStringArray("ground_collision")]
+capsule_id = 3
+ground_collision = NodePath("../../../Mesh_Crew_Quarter_Ground_0/StaticBody3D/CollisionShape3D")
 
 [node name="DECK_A" parent="." instance=ExtResource("6_1lydy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -25.815723, 0)
@@ -1188,47 +1194,6 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_c25gc")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_gtgns")
 theme_override_styles/hover = SubResource("StyleBoxFlat_5yrnl")
 text = "OUT"
-
-[node name="CryoSiloUI" type="Control" parent="WIDGETS" node_paths=PackedStringArray("silo", "cryopod_left", "cryopod_right", "cryopod_center")]
-layout_mode = 3
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -80.0
-offset_top = -80.0
-offset_right = 80.0
-offset_bottom = 80.0
-grow_horizontal = 2
-grow_vertical = 2
-script = ExtResource("16_gtgns")
-silo = NodePath("../../DECK_B/Crew Quarter/Cryo_Silo")
-cryopod_left = NodePath("../../DECK_B/Crew Quarter/Cryo_Silo/Lockers/Cryopod_Prok2_L")
-cryopod_right = NodePath("../../DECK_B/Crew Quarter/Cryo_Silo/Lockers/Cryopod_Prok_R")
-cryopod_center = NodePath("../../DECK_B/Crew Quarter/Cryo_Silo/Lockers/Cryopod_Prok3_C")
-
-[node name="VBoxContainer" type="VBoxContainer" parent="WIDGETS/CryoSiloUI"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -31.0
-offset_top = -56.0
-offset_right = 31.0
-offset_bottom = 56.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="BUTTON_PRIMARY" type="Button" parent="WIDGETS/CryoSiloUI/VBoxContainer"]
-layout_mode = 2
-text = "BUTTON"
-
-[node name="BUTTON_SECONDARY" type="Button" parent="WIDGETS/CryoSiloUI/VBoxContainer"]
-layout_mode = 2
-text = "BUTTON"
 
 [node name="Lift_Section" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5480194, 0, 0)

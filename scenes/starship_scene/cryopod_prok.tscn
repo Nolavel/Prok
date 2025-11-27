@@ -1491,16 +1491,16 @@ libraries = {
 &"": SubResource("AnimationLibrary_kgs7p")
 }
 
-[node name="interaction_area" type="Area3D" parent="."]
+[node name="InteractionZone" type="Area3D" parent="."]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="interaction_area"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractionZone"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.60555744, 0, 0)
 shape = SubResource("SphereShape3D_hwv7a")
 debug_color = Color(0, 0.5950001, 0.7, 1)
 
-[node name="Area_Capsule" type="Area3D" parent="."]
+[node name="CapsuleInteriorZone" type="Area3D" parent="."]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Area_Capsule"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CapsuleInteriorZone"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05456543, 0)
 shape = SubResource("CylinderShape3D_edaat")
 debug_color = Color(0.94, 0.19739997, 0.42018014, 1)
