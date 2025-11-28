@@ -1,5 +1,5 @@
 ## ============================================
-## CRYO_SILO_MANAGER.gd - Главный менеджер системы (ИСПРАВЛЕНО)
+## CRYO_SILO_MANAGER.gd - Главный менеджер системы
 ## ============================================
 extends Node3D
 class_name CryoSiloManager
@@ -23,6 +23,8 @@ signal wake_sequence_completed
 var is_silo_raised: bool = false
 var are_capsules_raised: bool = false
 var is_animating: bool = false
+var last_sleeping_capsule: CryoPod = null
+
 
 func _ready() -> void:
 	# Начальное состояние - сило опущен
@@ -37,6 +39,7 @@ func _ready() -> void:
 		cryopod_2.capsule_state_changed.connect(_on_capsule_state_changed)
 	if cryopod_3:
 		cryopod_3.capsule_state_changed.connect(_on_capsule_state_changed)
+		
 	
 	print("✅ Cryo Silo Manager: Инициализирован")
 
@@ -120,15 +123,19 @@ func start_sleep_sequence(cryopod: CryoPod) -> void:
 	if is_animating:
 		return
 	
+	# ✅ СОХРАНЯЕМ КАПСУЛУ, В КОТОРОЙ ЗАСЫПАЕТ ИГРОК
+	last_sleeping_capsule = cryopod
+	print("💾 Запомнили капсулу для пробуждения: ID %d" % cryopod.capsule_id)
+	
 	is_animating = true
 	animation_started.emit()
 	print("😴 Начало последовательности сна...")
-	
-	# 1. Закрыть капсулу
+
+	# 1. Закрыть ИМЕННО ЭТУ капсулу
 	if cryopod.is_open:
 		await cryopod.close_capsule()
 	
-	# 2. Опустить капсулы
+	# 2. Опустить капсулы (общая анимация пит/лифтов — ок)
 	if are_capsules_raised:
 		animation_player.play_backwards("caps_3_move")
 		await animation_player.animation_finished
@@ -149,21 +156,30 @@ func start_sleep_sequence(cryopod: CryoPod) -> void:
 	sleep_sequence_completed.emit()
 	print("😴 Последовательность сна завершена")
 
-func start_wake_sequence(cryopod: CryoPod) -> void:
+func start_wake_sequence(cryopod: CryoPod = null) -> void:
+	# ✅ ИСПОЛЬЗУЕМ ЗАПОМНЕННУЮ КАПСУЛУ, ЕСЛИ НЕ УКАЗАНА КОНКРЕТНАЯ
+	var target_cryopod = cryopod if cryopod else last_sleeping_capsule
+	
+	if not target_cryopod:
+		print("❌ Нет информации о капсуле для пробуждения")
+		return
+	
+	print("☀️ Пробуждаем игрока в капсуле ID %d" % target_cryopod.capsule_id)
+		
 	if is_animating:
 		return
 	
 	is_animating = true
 	animation_started.emit()
 	print("☀️ Начало последовательности пробуждения...")
-	
+
 	# 1. Поднять сило
 	if not is_silo_raised:
 		animation_player.play_backwards("down_caps")
 		await animation_player.animation_finished
 		is_silo_raised = true
 	
-	# 2. Поднять капсулы
+	# 2. Поднять капсулы (общая анимация)
 	if not are_capsules_raised:
 		animation_player.play("caps_1_move")
 		await animation_player.animation_finished
@@ -173,15 +189,9 @@ func start_wake_sequence(cryopod: CryoPod) -> void:
 		await animation_player.animation_finished
 		are_capsules_raised = true
 	
-	# 3. Открыть капсулу
-	if not cryopod.is_open:
-		await cryopod.open_capsule()
-	
-	# 4. Опустить сило обратно
-	if is_silo_raised:
-		animation_player.play("down_caps")
-		await animation_player.animation_finished
-		is_silo_raised = false
+	# 3. ✅ ОТКРЫТЬ ПРАВИЛЬНУЮ КАПСУЛУ (target_cryopod, А НЕ cryopod!)
+	if not target_cryopod.is_open:
+		await target_cryopod.open_capsule()
 	
 	is_animating = false
 	animation_finished.emit()

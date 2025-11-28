@@ -1,13 +1,13 @@
 ## ============================================
-## CRYO_UI_CONTROLLER.gd - Контроллер UI (ФИНАЛЬНАЯ ВЕРСИЯ)
+## CRYO_UI_CONTROLLER.gd - UI Controller
 ## ============================================
 extends Control
 class_name CryoUIController
 
 @onready var vbox: VBoxContainer = $VBox
 
-# Кнопки
-@onready var btn_computer: Button = $VBox/BtnComputer
+# Buttons
+@onready var btn_terminal: Button = $VBox/BtnTerminal
 @onready var btn_silo: Button = $VBox/BtnSilo
 @onready var btn_capsules: Button = $VBox/BtnCapsules
 @onready var btn_capsule_1: Button = $VBox/BtnCapsule1
@@ -15,10 +15,14 @@ class_name CryoUIController
 @onready var btn_capsule_3: Button = $VBox/BtnCapsule3
 @onready var btn_sleep_wake: Button = $VBox/BtnSleepWake
 
-# Компоненты
-var control_panel: ControlPanel
-var silo_manager: CryoSiloManager
+# Components
+@onready var control_panel: ControlPanel = $"../CryoSiloManager/ControlPanel"
+@onready var silo_manager: CryoSiloManager = $"../CryoSiloManager"
+@onready var display_terminal: Sprite3D = $"../CryoSiloManager/MeshTerminal/DisplayTerminal"
+@onready var terminal_light: OmniLight3D = $"../CryoSiloManager/MeshTerminal/TerminalLight"
 
+@export var terminal_texture_off: Texture2D
+@export var terminal_texture_on: Texture2D
 var active_cryopod: CryoPod = null
 var player_at_panel: bool = false
 var is_initialized: bool = false
@@ -26,9 +30,11 @@ var is_initialized: bool = false
 func _ready() -> void:
 	visible = false
 	_hide_all_buttons()
+	btn_terminal.text = "Activate Terminal"
+	display_terminal.modulate = Color (1.0, 1.0, 1.0, 0.1)
 	
-	# Подключаем кнопки
-	btn_computer.pressed.connect(_on_computer_pressed)
+	# Connect buttons
+	btn_terminal.pressed.connect(_on_terminal_pressed)
 	btn_silo.pressed.connect(_on_silo_pressed)
 	btn_capsules.pressed.connect(_on_capsules_pressed)
 	btn_capsule_1.pressed.connect(_on_capsule_1_pressed)
@@ -36,32 +42,31 @@ func _ready() -> void:
 	btn_capsule_3.pressed.connect(_on_capsule_3_pressed)
 	btn_sleep_wake.pressed.connect(_on_sleep_wake_pressed)
 	
-	print("🔍 UI: Начинаем поиск компонентов...")
-	
-	# Ждём загрузки сцены
+	# Wait for scene loading
 	await get_tree().process_frame
 	await get_tree().process_frame
 	
-	_find_components()
+	#_find_components()
 	_connect_signals()
+	_update_terminal_display()
 	
-	print("✅ Cryo UI Controller: Инициализирован")
+	print("Cryo UI Controller: Initialized")
 
-## === АВТОПОИСК КОМПОНЕНТОВ ===
+## === AUTO-FIND COMPONENTS ===
 func _find_components() -> void:
 	var root = get_tree().current_scene
 	
 	control_panel = _find_node_by_type(root, ControlPanel)
 	if control_panel:
-		print("✅ UI: ControlPanel найдена: %s" % control_panel.name)
+		print("UI: ControlPanel found: %s" % control_panel.name)
 	else:
-		print("❌ UI: ControlPanel НЕ найдена!")
+		print("UI: ControlPanel NOT found!")
 	
 	silo_manager = _find_node_by_type(root, CryoSiloManager)
 	if silo_manager:
-		print("✅ UI: SiloManager найден: %s" % silo_manager.name)
+		print("UI: SiloManager found: %s" % silo_manager.name)
 	else:
-		print("❌ UI: SiloManager НЕ найден!")
+		print("UI: SiloManager NOT found!")
 
 func _find_node_by_type(node: Node, type) -> Node:
 	if is_instance_of(node, type):
@@ -72,80 +77,80 @@ func _find_node_by_type(node: Node, type) -> Node:
 			return result
 	return null
 
-## === ПОДКЛЮЧЕНИЕ СИГНАЛОВ ===
+## === CONNECT SIGNALS ===
 func _connect_signals() -> void:
 	if not control_panel or not silo_manager:
-		print("⚠️ UI: Отсутствуют необходимые компоненты")
+		print("UI: Missing required components")
 		return
 	
-	# Подключаем панель управления
+	# Connect control panel
 	control_panel.player_entered_control_zone.connect(_on_player_at_panel)
 	control_panel.player_exited_control_zone.connect(_on_player_left_panel)
-	control_panel.computer_activated.connect(_on_computer_activated)
-	control_panel.computer_deactivated.connect(_on_computer_deactivated)
-	print("✅ UI: Подключена к ControlPanel")
+	control_panel.computer_activated.connect(_on_terminal_activated)
+	control_panel.computer_deactivated.connect(_on_terminal_deactivated)
+	print("UI: Connected to ControlPanel")
 	
-	# Подключаем менеджер
+	# Connect manager
 	silo_manager.silo_state_changed.connect(_on_silo_state_changed)
 	silo_manager.capsules_state_changed.connect(_on_capsules_state_changed)
 	silo_manager.animation_started.connect(_on_animation_started)
 	silo_manager.animation_finished.connect(_on_animation_finished)
-	print("✅ UI: Подключена к SiloManager")
+	print("UI: Connected to SiloManager")
 	
-	# Подключаем капсулы
+	# Connect capsules
 	if silo_manager.cryopod_1:
 		silo_manager.cryopod_1.player_entered_capsule.connect(_on_player_entered_capsule)
 		silo_manager.cryopod_1.player_exited_capsule.connect(_on_player_exited_capsule)
 		silo_manager.cryopod_1.capsule_state_changed.connect(_on_capsule_changed)
-		print("✅ UI: Подключена к Cryopod 1")
+		print("UI: Connected to Cryopod 1")
 	
 	if silo_manager.cryopod_2:
 		silo_manager.cryopod_2.player_entered_capsule.connect(_on_player_entered_capsule)
 		silo_manager.cryopod_2.player_exited_capsule.connect(_on_player_exited_capsule)
 		silo_manager.cryopod_2.capsule_state_changed.connect(_on_capsule_changed)
-		print("✅ UI: Подключена к Cryopod 2")
+		print("UI: Connected to Cryopod 2")
 	
 	if silo_manager.cryopod_3:
 		silo_manager.cryopod_3.player_entered_capsule.connect(_on_player_entered_capsule)
 		silo_manager.cryopod_3.player_exited_capsule.connect(_on_player_exited_capsule)
 		silo_manager.cryopod_3.capsule_state_changed.connect(_on_capsule_changed)
-		print("✅ UI: Подключена к Cryopod 3")
+		print("UI: Connected to Cryopod 3")
 	
 	is_initialized = true
 
-## === ОБРАБОТЧИКИ КНОПОК ===
-func _on_computer_pressed() -> void:
-	print("🖱️ UI: Нажата кнопка компьютера")
+## === BUTTON HANDLERS ===
+func _on_terminal_pressed() -> void:
+	print("UI: Terminal button pressed")
 	if control_panel:
 		control_panel.toggle_computer()
 
 func _on_silo_pressed() -> void:
-	print("🖱️ UI: Нажата кнопка сило")
+	print("UI: Silo button pressed")
 	if silo_manager:
 		silo_manager.toggle_silo()
 
 func _on_capsules_pressed() -> void:
-	print("🖱️ UI: Нажата кнопка капсул")
+	print("UI: Capsules button pressed")
 	if silo_manager:
 		silo_manager.toggle_capsules()
 
 func _on_capsule_1_pressed() -> void:
-	print("🖱️ UI: Нажата кнопка капсулы 1")
+	print("UI: Capsule 1 button pressed")
 	if silo_manager and silo_manager.cryopod_1:
 		await silo_manager.cryopod_1.toggle_capsule()
 
 func _on_capsule_2_pressed() -> void:
-	print("🖱️ UI: Нажата кнопка капсулы 2")
+	print("UI: Capsule 2 button pressed")
 	if silo_manager and silo_manager.cryopod_2:
 		await silo_manager.cryopod_2.toggle_capsule()
 
 func _on_capsule_3_pressed() -> void:
-	print("🖱️ UI: Нажата кнопка капсулы 3")
+	print("UI: Capsule 3 button pressed")
 	if silo_manager and silo_manager.cryopod_3:
 		await silo_manager.cryopod_3.toggle_capsule()
 
 func _on_sleep_wake_pressed() -> void:
-	print("🖱️ UI: Нажата кнопка сон/пробуждение")
+	print("UI: Sleep/Wake button pressed")
 	if not active_cryopod or not silo_manager:
 		return
 	
@@ -156,50 +161,43 @@ func _on_sleep_wake_pressed() -> void:
 		await silo_manager.start_wake_sequence(active_cryopod)
 		active_cryopod.enable_ground_collision()
 
-## === ОБРАБОТЧИКИ СИГНАЛОВ ===
+## === SIGNAL HANDLERS ===
 func _on_player_at_panel() -> void:
 	player_at_panel = true
 	visible = true
-	btn_computer.visible = true
-	print("🖥️ UI: Игрок у панели - показываем кнопку компьютера")
+	btn_terminal.visible = true
+	print("UI: Player at panel - showing terminal button")
 
 func _on_player_left_panel() -> void:
 	player_at_panel = false
-	# ИСПРАВЛЕНИЕ: Если компьютер выключен - скрываем UI
-	if control_panel and not control_panel.is_computer_on:
-		visible = false
-		print("🖥️ UI: Игрок отошёл - скрываем UI")
-	else:
-		# Если компьютер включён - скрываем только кнопку компьютера
-		btn_computer.visible = false
-		print("🖥️ UI: Игрок отошёл, но компьютер включён - управление остаётся")
+	visible = false
+	print("UI: Player left panel")
 
-func _on_computer_activated() -> void:
-	print("💻 UI: Компьютер ВКЛЮЧЁН - показываем управление")
-	btn_computer.text = "Выключить компьютер"
-	btn_computer.visible = player_at_panel  # Показываем только если игрок у панели
+func _on_terminal_activated() -> void:
+	print("UI: Terminal ACTIVATED - showing controls")
+	btn_terminal.text = "Shutdown Terminal"
+	btn_terminal.visible = player_at_panel
+	_update_terminal_display()
 	_update_ui()
 
-func _on_computer_deactivated() -> void:
-	print("💻 UI: Компьютер ВЫКЛЮЧЕН - скрываем управление")
-	btn_computer.text = "Включить компьютер"
+func _on_terminal_deactivated() -> void:
+	print("UI: Terminal DEACTIVATED - hiding controls")
+	btn_terminal.text = "Activate Terminal"
+	_update_terminal_display()
 	_hide_all_buttons()
-	btn_computer.visible = player_at_panel
+	btn_terminal.visible = player_at_panel
 	
-	# НОВОЕ: Если игрок отошёл - полностью скрываем UI
 	if not player_at_panel:
 		visible = false
 
 func _on_silo_state_changed(is_raised: bool) -> void:
-	btn_silo.text = "Опустить сило" if is_raised else "Поднять сило"
 	_update_ui()
 
 func _on_capsules_state_changed(are_raised: bool) -> void:
-	btn_capsules.text = "Опустить капсулы" if are_raised else "Поднять капсулы"
 	_update_ui()
 
 func _on_capsule_changed(is_open: bool, capsule_id: int) -> void:
-	print("📡 UI: Капсула %d изменилась: %s" % [capsule_id, "открыта" if is_open else "закрыта"])
+	print("UI: Capsule %d changed: %s" % [capsule_id, "open" if is_open else "closed"])
 	_update_ui()
 
 func _on_animation_started() -> void:
@@ -214,55 +212,85 @@ func _on_player_entered_capsule(capsule_id: int) -> void:
 		1: active_cryopod = silo_manager.cryopod_1
 		2: active_cryopod = silo_manager.cryopod_2
 		3: active_cryopod = silo_manager.cryopod_3
-	print("🛏️ UI: Игрок в капсуле %d" % capsule_id)
+	print("UI: Player in capsule %d" % capsule_id)
 	_update_ui()
 
 func _on_player_exited_capsule(capsule_id: int) -> void:
 	active_cryopod = null
-	print("🚪 UI: Игрок вышел из капсулы")
+	print("UI: Player exited capsule")
 	_update_ui()
 
-## === ОБНОВЛЕНИЕ UI ===
+## === UI UPDATE ===
 func _update_ui() -> void:
 	if not is_initialized or not silo_manager or not control_panel:
 		return
 	
-	var computer_on = control_panel.is_computer_on
+	_update_terminal_display()
+	
+	var terminal_on = control_panel.is_computer_on
+	var silo_raised = silo_manager.is_silo_raised
 	var caps_raised = silo_manager.are_capsules_raised
 	
-	# Если компьютер выключен - скрываем всё кроме кнопки компьютера
-	if not computer_on:
+	# If terminal is off - hide everything except terminal button
+	if not terminal_on:
 		_hide_all_buttons()
-		btn_computer.visible = player_at_panel
+		btn_terminal.visible = player_at_panel
 		return
 	
-	# Компьютер включён - показываем управление только если игрок у панели
-	if player_at_panel:
-		btn_computer.visible = true
-	else:
-		btn_computer.visible = false
-	
+	# Terminal is on - show controls only if player at panel
+	btn_terminal.visible = player_at_panel
 	btn_silo.visible = true
 	btn_capsules.visible = true
 	
-	# Кнопки капсул видны только если капсулы подняты
+	# Update silo button
+	if silo_raised:
+		btn_silo.text = "Lower CryoSilo"
+		# DISABLE if capsules are raised
+		btn_silo.disabled = caps_raised
+	else:
+		btn_silo.text = "Raise CryoSilo"
+		btn_silo.disabled = false
+	
+	# Update capsules button
+	if caps_raised:
+		btn_capsules.text = "Lower Cryopods"
+		# DISABLE if any capsule is open
+		btn_capsules.disabled = _any_capsule_open()
+	else:
+		btn_capsules.text = "Raise Cryopods"
+		# DISABLE if silo is not raised
+		btn_capsules.disabled = not silo_raised
+	
+	# Capsule buttons visible only if capsules are raised
 	btn_capsule_1.visible = caps_raised
 	btn_capsule_2.visible = caps_raised
 	btn_capsule_3.visible = caps_raised
 	
-	# Кнопка сон/пробуждение видна только когда игрок внутри капсулы
+	# Update capsule button texts
+	if caps_raised:
+		if silo_manager.cryopod_1:
+			btn_capsule_1.text = "Lock Pod R1" if silo_manager.cryopod_1.is_open else "Unlock Pod R1"
+		if silo_manager.cryopod_2:
+			btn_capsule_2.text = "Lock Pod R2" if silo_manager.cryopod_2.is_open else "Unlock Pod R2"
+		if silo_manager.cryopod_3:
+			btn_capsule_3.text = "Lock Pod R3" if silo_manager.cryopod_3.is_open else "Unlock Pod R3"
+	
+	# Sleep/Wake button visible only when player inside capsule
 	btn_sleep_wake.visible = (active_cryopod != null and active_cryopod.player_inside)
 	
-	# Обновляем текст кнопок капсул
-	if silo_manager.cryopod_1:
-		btn_capsule_1.text = "Закрыть капсулу 1" if silo_manager.cryopod_1.is_open else "Открыть капсулу 1"
-	if silo_manager.cryopod_2:
-		btn_capsule_2.text = "Закрыть капсулу 2" if silo_manager.cryopod_2.is_open else "Открыть капсулу 2"
-	if silo_manager.cryopod_3:
-		btn_capsule_3.text = "Закрыть капсулу 3" if silo_manager.cryopod_3.is_open else "Открыть капсулу 3"
-	
 	if active_cryopod and active_cryopod.player_inside:
-		btn_sleep_wake.text = "Уйти в сон"
+		btn_sleep_wake.text = "Enter Cryosleep"
+
+## === HELPER FUNCTIONS ===
+func _any_capsule_open() -> bool:
+	var result = false
+	if silo_manager.cryopod_1 and silo_manager.cryopod_1.is_open:
+		result = true
+	if silo_manager.cryopod_2 and silo_manager.cryopod_2.is_open:
+		result = true
+	if silo_manager.cryopod_3 and silo_manager.cryopod_3.is_open:
+		result = true
+	return result
 
 func _hide_all_buttons() -> void:
 	btn_silo.visible = false
@@ -273,10 +301,34 @@ func _hide_all_buttons() -> void:
 	btn_sleep_wake.visible = false
 
 func _lock_all_buttons(locked: bool) -> void:
-	btn_computer.disabled = locked
+	btn_terminal.disabled = locked
 	btn_silo.disabled = locked
 	btn_capsules.disabled = locked
 	btn_capsule_1.disabled = locked
 	btn_capsule_2.disabled = locked
 	btn_capsule_3.disabled = locked
 	btn_sleep_wake.disabled = locked
+	
+func _update_terminal_display() -> void:
+	if not display_terminal:
+		return
+
+	var on := control_panel and control_panel.is_computer_on
+
+	if on:
+		display_terminal.texture = terminal_texture_on
+		display_terminal.modulate = Color(1.0, 1.0, 1.0, 0.1)
+	else:
+		display_terminal.texture = terminal_texture_off
+		display_terminal.modulate = Color(1.0, 1.0, 1.0, 0.5)
+
+	_terminal_lighting(on)
+
+		
+func _terminal_lighting(is_on: bool) -> void:
+	if not terminal_light:
+		return
+	terminal_light.visible = is_on
+
+		
+		

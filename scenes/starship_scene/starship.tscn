@@ -706,22 +706,6 @@ exit_scene = false
 [node name="DECK_B" parent="." instance=ExtResource("5_jpp7u")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.16543579, -44.49, 0.16543579)
 
-[node name="Cryo_Silo" parent="DECK_B/Crew Quarter" index="3" node_paths=PackedStringArray("cryopod_1", "cryopod_2", "cryopod_3")]
-cryopod_1 = NodePath("Lockers/Cryopod_Prok_R")
-cryopod_2 = NodePath("Lockers/Cryopod_Prok2_L")
-cryopod_3 = NodePath("Lockers/Cryopod_Prok3_C")
-
-[node name="Cryopod_Prok_R" parent="DECK_B/Crew Quarter/Cryo_Silo/Lockers" index="0" node_paths=PackedStringArray("ground_collision")]
-ground_collision = NodePath("../../../Mesh_Crew_Quarter_Ground_0/StaticBody3D/CollisionShape3D")
-
-[node name="Cryopod_Prok2_L" parent="DECK_B/Crew Quarter/Cryo_Silo/Lockers" index="1" node_paths=PackedStringArray("ground_collision")]
-capsule_id = 2
-ground_collision = NodePath("../../../Mesh_Crew_Quarter_Ground_0/StaticBody3D/CollisionShape3D")
-
-[node name="Cryopod_Prok3_C" parent="DECK_B/Crew Quarter/Cryo_Silo/Lockers" index="2" node_paths=PackedStringArray("ground_collision")]
-capsule_id = 3
-ground_collision = NodePath("../../../Mesh_Crew_Quarter_Ground_0/StaticBody3D/CollisionShape3D")
-
 [node name="DECK_A" parent="." instance=ExtResource("6_1lydy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -25.815723, 0)
 visible = false
